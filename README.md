@@ -1,4 +1,4 @@
-# Edge-Weighted Maximum Clique Problem Bounds
+# Upper Bounds for the Edge-Weighted Maximum Clique Problem
 
 This repository contains the implementation of two upper bounds for the Edge-Weighted Maximum Clique Problem (EWMCP), specifically the ones proposed by [San Segundo et al.](https://doi.org/10.1016/j.ejor.2019.03.047) and [Shimizu et al.](https://doi.org/10.1016/j.disopt.2020.100583). 
 
