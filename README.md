@@ -67,7 +67,7 @@ For San Segundo et al. bound (SS):
 - Solution status
 - Computation time
 
-For Shimizu bound (SH):
+For Shimizu et al. bound (SH):
 - Value of the bound (second policy) 
 - Value of the bound (first policy) 
 - Solution status
