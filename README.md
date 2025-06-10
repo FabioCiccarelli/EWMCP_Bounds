@@ -62,8 +62,8 @@ The program writes its results to a file named `results.txt`. Each line in this 
 Followed by approach-specific values:
 
 For San Segundo et al. bound (SS):
-- Value of the bound
-- Upper bound to the value of the bound
+- Value returned by `cplex.getObjValue()`
+- Value returned by `cplex.getBestObjValue()`
 - Solution status
 - Computation time
 
