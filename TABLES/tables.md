@@ -28,8 +28,12 @@ Comparison between $UB_1$ and $UB_2$ on random graphs with **variable density**,
 ## Tables
 
 ![Random graphs with fixed n=100 and variable density](table_random_densities_n100.png)
+
 *Table 1: Comparison of upper bounds on random graphs with 100 nodes and varying density*
 
+
+
 ![Random graphs with variable density and nodes](table_random_densities.png)
+
 *Table 2: Comparison of upper bounds on random graphs with varying density and number of nodes*
 
