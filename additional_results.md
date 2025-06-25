@@ -102,7 +102,7 @@ Tables 5 and 6 demonstrate how the average gap between the upper bound values an
 <br>
 
 
-The following table shows the percentage difference between the two upper bounds across DIMACS families, but with random weights of the graph edges. Since we do not have an optimal solution value for the EWMCP on instances with random edge weights, gap-related statistics are omitted.
+The following table shows the percentage difference between the two upper bounds across DIMACS families, comparing the results obtained with random edge weights and those obtained with deterministic edge weights. Since we do not have an optimal solution value for the EWMCP on instances with random edge weights, gap-related statistics are omitted.
 
 
 <div align="center">
