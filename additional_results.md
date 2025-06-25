@@ -110,6 +110,6 @@ The following table shows the percentage difference between the two upper bounds
 
 *Table 6: Percentage difference between $UB_1$ and $UB_2$ for DIMACS instances with random edge weights*
 
-![Random graphs with different colorings](TABLES/table_random_coloring_n100.png)
+![Random graphs with different colorings](TABLES/table_dimacs_families_randw.png)
 
 </div>
