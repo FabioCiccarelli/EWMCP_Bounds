@@ -89,7 +89,7 @@ Tables 5 and 6 demonstrate how the average gap between the upper bound values an
 
 <div align="center">
 
-*Table 5: Average percentage gap of $UB_1$ and $UB_2$ across different colorings ($|V| = 100$)*
+*Table 6: Average percentage gap of $UB_1$ and $UB_2$ across different colorings ($|V| = 100$)*
 
 ![Random graphs with different colorings](TABLES/table_random_coloring_n100.png)
 
@@ -108,7 +108,7 @@ The following table shows the percentage difference between the two upper bounds
 <div align="center">
 
 
-*Table 6: Percentage difference between $UB_1$ and $UB_2$ for DIMACS instances with random edge weights*
+*Table 7: Percentage difference between $UB_1$ and $UB_2$ for DIMACS instances with random edge weights*
 
 ![Random graphs with different colorings](TABLES/table_random_coloring_n100.png)
 
