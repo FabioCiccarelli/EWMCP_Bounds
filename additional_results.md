@@ -22,7 +22,7 @@ The following column headers are shared across multiple tables presented below a
 
 <div align="center">
 
-*Table 1: Comparison of $UB_1$ and $UB_2$ on random graphs with varying number of vertices*
+*Table 1: Comparison of UB<sub>1</sub> and UB<sub>2</sub> on random graphs with varying number of vertices*
 
 ![Random graphs with variable density and nodes](TABLES/table_random_nodes.png)
 
@@ -33,7 +33,7 @@ The following column headers are shared across multiple tables presented below a
 
 <div align="center">
 
-*Table 2: Comparison of $UB_1$ and $UB_2$ on random graphs with $|V| = 100$ and varying density*
+*Table 2: Comparison of UB<sub>1</sub> and UB<sub>2</sub> on random graphs with |V| = 100 and varying density*
 
 ![Random graphs with fixed n=100 and variable density](TABLES/table_random_densities_n100.png)
 
@@ -50,7 +50,7 @@ Tables 3 and 4, which follow, present numerical results aimed at studying the va
 
 <div align="center">
 
-*Table 3: $UB_2$ variation across 10 different independent set orderings in graph coloring*
+*Table 3: UB<sub>2</sub> variation across 10 different independent set orderings in graph coloring*
 
 ![Random graphs with variable independent shuffling](TABLES/table_random_shuffling.png)
 
@@ -61,7 +61,7 @@ Tables 3 and 4, which follow, present numerical results aimed at studying the va
 
 <div align="center">
 
-*Table 4: $UB_2$ variation across 10 different independent set orderings in graph coloring ($|V| = 100$)*
+*Table 4: UB<sub>2</sub> variation across 10 different independent set orderings in graph coloring (|V| = 100)*
 
 ![Random graphs with variable independent shuffling n 100](TABLES/table_random_shuffling_n100.png)
 
@@ -78,7 +78,7 @@ Tables 5 and 6 demonstrate how the average gap between the upper bound values an
 
 <div align="center">
 
-*Table 5: Average percentage gap of $UB_1$ and $UB_2$ across different colorings*
+*Table 5: Average percentage gap of UB<sub>1</sub> and UB<sub>2</sub> across different colorings*
 
 ![Random graphs with different colorings](TABLES/table_random_coloring.png)
 
@@ -89,7 +89,7 @@ Tables 5 and 6 demonstrate how the average gap between the upper bound values an
 
 <div align="center">
 
-*Table 6: Average percentage gap of $UB_1$ and $UB_2$ across different colorings ($|V| = 100$)*
+*Table 6: Average percentage gap of UB<sub>1</sub> and UB<sub>2</sub> across different colorings (|V| = 100)*
 
 ![Random graphs with different colorings](TABLES/table_random_coloring_n100.png)
 
@@ -108,7 +108,7 @@ The following table shows the percentage difference between the two upper bounds
 <div align="center">
 
 
-*Table 7: Percentage difference between $UB_1$ and $UB_2$ for DIMACS instances with random edge weights*
+*Table 7: Percentage difference between UB<sub>1</sub> and UB<sub>2</sub> for DIMACS instances with random edge weights*
 
 ![Random graphs with different colorings](TABLES/table_dimacs_families_randw.png)
 
