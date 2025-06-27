@@ -4,7 +4,7 @@ This repository contains the implementation of two upper bounds for the Edge-Wei
 
 The code is associated with the research paper:
 
-**"Strength of the upper bounds for the edge-weighted maximum clique problem"**  
+**"Strength of the Upper Bounds for the Edge-Weighted Maximum Clique Problem"**  
 by F. Ciccarelli, V. Dose, F. Furini and M. Monaci.
 
 
