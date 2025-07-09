@@ -7,6 +7,7 @@ The code is associated with the research paper:
 **"Strength of the Upper Bounds for the Edge-Weighted Maximum Clique Problem"**  
 by F. Ciccarelli, V. Dose, F. Furini and M. Monaci.
 
+[Link to the article](https://optimization-online.org/?p=30937)
 
 ## Acknowledgments
 
