@@ -1,115 +1,145 @@
-# Some additional computational results
-
-This file contains additional numerical results that supplement those presented in the paper.
-
-## Table Structure
-
-### Columns
-
-The following column headers are shared across multiple tables presented below and are therefore defined here for reference:
-
-- **|V|**: Number of vertices in the graph
-- **% $\mu$**: Percentage edge density of the graph
-- **#**: number of instances sharing the same parameters
-- **# opt**: number of instances solved to fully optimality
-- **% gap**: percentage gap of the bound with the actual edge-weighted clique number of the graph
-- **% diff.**: percentage difference between the two bounds, computed as:
-
- $$\% \text{diff.} = 100 \, \frac{UB_1 - UB_2}{\max\{UB_1, \, UB_2\}}$$
-
-
-## Tables
+# 📊 Additional Computational Results
 
 <div align="center">
 
-*Table 1: Comparison of UB<sub>1</sub> and UB<sub>2</sub> on random graphs with varying number of vertices*
+[![Article](https://img.shields.io/badge/Full_Article-Avalable-green.svg)](https://arxiv.org/abs/2507.06898)
+
+
+</div>
+
+---
+
+## 📋 Overview
+
+This document contains additional numerical results that supplement those presented in the main research paper. These extended results provide insights into the performance and behavior of the proposed upper bounds.
+
+## 📖 Table Structure Reference
+
+### 📌 Column Definitions
+
+The following column headers are shared across multiple tables and are defined here for reference:
+
+| Column | Description |
+|--------|-------------|
+| **\|V\|** | Number of vertices in the graph |
+| **% μ** | Percentage edge density of the graph |
+| **#** | Number of instances sharing the same parameters |
+| **% gap** | Percentage gap between bound and actual edge-weighted clique number |
+| **% diff.** | Percentage difference between the two bounds |
+
+<br>
+
+The percentage difference between bounds is computed as:
+
+$$\% \text{diff.} = 100 \cdot \frac{UB_1 - UB_2}{\max\{UB_1, \, UB_2\}}$$
+
+---
+
+## 📈 Computational Results
+
+### 🔍 Bound Comparison on Variable Graph Sizes
+
+<div align="center">
+
+**Table 1:** *Comparison of UB₁ and UB₂ on random graphs with varying number of vertices*
 
 ![Random graphs with variable density and nodes](TABLES/table_random_nodes.png)
 
 </div>
 
-<br>
-<br>
+---
+
+### 📊 Density Impact Analysis
 
 <div align="center">
 
-*Table 2: Comparison of UB<sub>1</sub> and UB<sub>2</sub> on random graphs with |V| = 100 and varying density*
+**Table 2:** *Comparison of UB₁ and UB₂ on random graphs with |V| = 100 and varying density*
 
 ![Random graphs with fixed n=100 and variable density](TABLES/table_random_densities_n100.png)
 
 </div>
 
-<br>
-<br>
-<br>
-<br>
+---
 
+## 🔄 Independent Set Ordering Sensitivity Analysis
 
+The following tables present numerical results aimed at studying the variation of UB₂ values across different orderings of independent sets within the same coloring (specifically, obtained through DSATUR). 
 
-Tables 3 and 4, which follow, present numerical results aimed at studying the variation of the value of $UB_2$ across different orderings of independents of the same coloring (specifically, obtained through DSATUR). The reported statistics analyze how the minimum and maximum bound values deviate from the average across these different orderings.
+The reported statistics analyze how the minimum and maximum bound values deviate from the average across these different orderings.
+
+### Variable Graph Sizes
 
 <div align="center">
 
-*Table 3: UB<sub>2</sub> variation across 10 different independent set orderings in graph coloring*
+**Table 3:** *UB₂ variation across 10 different independent set orderings in graph coloring*
 
 ![Random graphs with variable independent shuffling](TABLES/table_random_shuffling.png)
 
 </div>
 
-<br>
-<br>
+---
+
+### Fixed Graph Size (|V| = 100)
 
 <div align="center">
 
-*Table 4: UB<sub>2</sub> variation across 10 different independent set orderings in graph coloring (|V| = 100)*
+**Table 4:** *UB₂ variation across 10 different independent set orderings in graph coloring (|V| = 100)*
 
 ![Random graphs with variable independent shuffling n 100](TABLES/table_random_shuffling_n100.png)
 
 </div>
 
-<br>
-<br>
-<br>
-<br>
+---
 
+## 🎨 Coloring Method Sensitivity Analysis
 
-Tables 5 and 6 demonstrate how the average gap between the upper bound values and the optimal edge-weight clique number of the instances is sensitive to the chosen coloring method.
+The following tables demonstrate how the **average gap** between upper bound values and the optimal edge-weighted clique number is sensitive to the chosen **coloring method**.
 
+### Multiple Coloring Methods Comparison
 
 <div align="center">
 
-*Table 5: Average percentage gap of UB<sub>1</sub> and UB<sub>2</sub> across different colorings*
+**Table 5:** *Average percentage gap of UB₁ and UB₂ across different colorings*
 
 ![Random graphs with different colorings](TABLES/table_random_coloring.png)
 
 </div>
 
-<br>
-<br>
+---
+
+### Fixed Graph Size Analysis
 
 <div align="center">
 
-*Table 6: Average percentage gap of UB<sub>1</sub> and UB<sub>2</sub> across different colorings (|V| = 100)*
+**Table 6:** *Average percentage gap of UB₁ and UB₂ across different colorings (|V| = 100)*
 
 ![Random graphs with different colorings](TABLES/table_random_coloring_n100.png)
 
 </div>
 
+---
 
-<br>
-<br>
-<br>
-<br>
+## 🎯 DIMACS Benchmark Analysis
 
+The following table shows the percentage difference between the two upper bounds across DIMACS families, comparing results obtained with random edge weights versus those with deterministic edge weights. 
 
-The following table shows the percentage difference between the two upper bounds across DIMACS families, comparing the results obtained with random edge weights and those obtained with deterministic edge weights. Since we do not have an optimal solution value for the EWMCP on instances with random edge weights, gap-related statistics are omitted.
-
+> **Note:** Since optimal solution values for EWMCP on instances with random edge weights are not available, gap-related statistics are omitted from this analysis.
 
 <div align="center">
 
+**Table 7:** *Percentage difference between UB₁ and UB₂ for DIMACS instances with random edge weights*
 
-*Table 7: Percentage difference between UB<sub>1</sub> and UB<sub>2</sub> for DIMACS instances with random edge weights*
-
-![Random graphs with different colorings](TABLES/table_dimacs_families_randw.png)
+![DIMACS families with random weights](TABLES/table_dimacs_families_randw.png)
 
 </div>
+
+---
+
+---
+
+<div align="center">
+<sub>For implementation details, see the <a href="code_usage.md">code usage guide</a> | Return to <a href="README.md">main README</a></sub>
+</div>
+<br>
+<br>
+

@@ -1,64 +1,118 @@
-## Code usage
+# 💻 Code Usage Guide
 
-The executable generated from this code takes the following parameters:
+<div align="center">
 
-```
+[![C++](https://img.shields.io/badge/Language-C++-blue.svg)](https://www.cplusplus.com/)
+[![CPLEX](https://img.shields.io/badge/Requires-CPLEX-orange.svg)](https://www.ibm.com/products/ilog-cplex-optimization-studio)
+
+</div>
+
+---
+
+## 🚀 Quick Start
+
+The executable generated from this code follows this command structure:
+
+```bash
 ./EWMCP_BOUNDS <graph_file> <weights_file> <approach> <coloring_method> <random_seed> <time_limit>
 ```
 
-### Parameters:
+## 📋 Parameters Reference
 
-- **graph_file**: Path to the input graph file
-- **weights_file**: Path to the edge weights file
-- **approach**: Bounding approach to use
-  - `SS` - San Segundo et al. bound
-  - `SH` - Shimizu et al. bound
-- **coloring_method**: Method for coloring the graph
-  - `dsatur` - DSatur algorithm
-  - `random` - Random coloring
-- **random_seed**: Integer for random number generation (only used for random coloring, just put -1 in case of dsatur)
-- **time_limit**: Time limit in seconds
+| Parameter | Description | Options |
+|-----------|-------------|---------|
+| `graph_file` | Path to the input graph file | DIMACS format file |
+| `weights_file` | Path to the edge weights file | One weight per line |
+| `approach` | Bounding approach to use | `SS` (San Segundo) or `SH` (Shimizu) |
+| `coloring_method` | Graph coloring method | `dsatur` or `random` |
+| `random_seed` | Random seed for coloring | Integer (-1 for dsatur) |
+| `time_limit` | Maximum runtime in seconds | Positive integer |
 
+### 🔵 Approach Options
 
-#### DIMACS Graph Format
+- **`SS`** - San Segundo et al. bound ([EJOR 2019](https://doi.org/10.1016/j.ejor.2019.03.047))
+- **`SH`** - Shimizu et al. bound ([Discrete Optimization 2020](https://doi.org/10.1016/j.disopt.2020.100583))
+
+### 🎨 Coloring Method Options
+
+- **`dsatur`** - DSATUR algorithm (recommended)
+- **`random`** - Random coloring method
+
+## 📄 Input File Formats
+
+### DIMACS Graph Format
 
 The code reads graph instances in the standard DIMACS format:
 
-- `p edge n m ` - Problem line: n vertices, m edges
-- `e i j` - Edge between vertices i and j, one for each line of the file
-
-The weights file should instead contain one weight per line, matching the order of edges in the DIMACS file.
-
-An example graph instance (`brock200_1.clq`) and its associated weights file (`brock200_1.clq.weights`) are provided in the repo.
-
-### Example:
 ```
+p edge n m         # Problem line: n vertices, m edges
+e i j              # Edge between vertices i and j
+e x y              # Additional edges...
+```
+
+### Weights File Format
+
+The weights file should contain one weight per line, matching the exact order of edges in the instance file:
+
+```
+weight_1           # Weight for first edge
+weight_2           # Weight for second edge
+...
+```
+
+## 🔧 Example Usage
+
+### Basic Example
+
+```bash
 ./EWMCP_BOUNDS ./brock200_1.clq ./brock200_1.clq.weights SS dsatur -1 3600
 ```
 
-## Output
+This command:
+- Uses graph `brock200_1.clq`
+- Uses weights from `brock200_1.clq.weights`
+- Applies San Segundo bound (`SS`)
+- Uses DSATUR coloring
+- No random seed needed (`-1`)
+- Sets 1 hour time limit
 
-The program writes its results to a file named `results.txt`. Each line in this file contains:
 
-- Graph instance file path
-- Weights file path
-- Bounding approach used (SS or SH)
-- Coloring method used (dsatur or random)
-- Random seed value
-- Time limit value
-- Number of vertices of the graph
-- Number of edges of the graph
 
-Followed by approach-specific values:
+## 📤 Output Format
 
-For San Segundo et al. bound (SS):
-- Value returned by `cplex.getObjValue()`
-- Value returned by `cplex.getBestObjValue()`
-- Solution status
-- Computation time
+The program writes results to **`results.txt`**. Each line contains:
 
-For Shimizu et al. bound (SH):
-- Value of the bound (second policy) 
-- Value of the bound (first policy) 
-- Solution status
-- Computation time
+###  Common Fields (All Approaches)
+| Field | Description |
+|-------|-------------|
+| Graph file | Path to input graph |
+| Weights file | Path to weights file |
+| Approach | `SS` or `SH` |
+| Coloring method | `dsatur` or `random` |
+| Random seed | Seed value used |
+| Time limit | Time limit in seconds |
+| Vertices | Number of graph vertices |
+| Edges | Number of graph edges |
+
+### 🔵 San Segundo Bound (`SS`) Specific Fields
+| Field | Description |
+|-------|-------------|
+| `cplex.getObjValue()` | CPLEX objective value |
+| `cplex.getBestObjValue()` | CPLEX best bound |
+| Solution status | CPLEX solution status |
+| Computation time | Runtime in seconds |
+
+### 🔴 Shimizu Bound (`SH`) Specific Fields
+| Field | Description |
+|-------|-------------|
+| Bound (Policy 2) | Second policy bound value |
+| Bound (Policy 1) | First policy bound value |
+| Solution status | Algorithm status |
+| Computation time | Runtime in seconds |
+
+
+---
+
+<div align="center">
+<sub>For more information, see the main <a href="README.md">README</a> or the <a href="additional_results.md">additional results</a></sub>
+</div>
