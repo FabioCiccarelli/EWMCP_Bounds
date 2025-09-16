@@ -30,9 +30,8 @@ The code is associated with the research paper:
 
 ### Prerequisites
 - C++ compiler with C++17 support
-- IBM CPLEX Optimization Studio
-- CMake (recommended)
-
+- IBM ILOG CPLEX Solver
+  
 ## 📁 Repository Structure
 
 - **[`src/`](src/)**: Source code implementation
