@@ -8,7 +8,9 @@
 
 </div>
 
----
+<p align="center">
+  <img src="EWMCP_Bounds_logo.png" alt="EWMCP logo" width="600"/>
+</p>
 
 ## 📖 Overview
 
