@@ -16,9 +16,9 @@ void SanSegundoBound_ModelBuild(instance *inst)
 	inst->model = IloModel(inst->env);
 
 	// RHO VARIABLES rho[e][u] = fraction of weight of edge e assigned to node u
-	inst->rho = IloArray<IloNumVarArray>(inst->env, inst->G->m);
+	inst->rho = IloArray<IloNumVarArray>(inst->env, inst->G->nedges);
     
-	for (int e=0; e < inst->G->m; e++) {
+	for (int e=0; e < inst->G->nedges; e++) {
         inst->rho[e] = IloNumVarArray(inst->env, 2, 0, IloInfinity, ILOFLOAT);  
     }
 
@@ -39,10 +39,10 @@ void SanSegundoBound_ModelBuild(instance *inst)
 	// CONSTRAINTS 
 	// 1. rho[e][u] + rho[e][v] >= c_e for all e in E
 
-	for (int e = 0; e < inst->G->m; e++) {
+	for (int e = 0; e < inst->G->nedges; e++) {
 		IloExpr expr(inst->env);
 		expr += inst->rho[e][0] + inst->rho[e][1];
-		inst->model.add(expr >= inst->G->P[e]);
+		inst->model.add(expr >= inst->G->edge_weights[e]);
 		expr.end();
 	}
 
@@ -50,17 +50,20 @@ void SanSegundoBound_ModelBuild(instance *inst)
 
 	// 2. pi[I] >= sum_{e in delta(u)}(rho[e][u]) for all u in V, I = color(u)
 
-	for (int u = 0; u < inst->G->n; u++)
+	for (int u = 0; u < inst->G->nnodes; u++)
 	{
 		IloExpr expr(inst->env);
-		for (int  k = inst->G->NFS[u]; k < inst->G->NFS[u+1]; k++)
+		for (int k = 0; k < inst->G->node_degree[u]; k++)
 		{
-			expr += inst->rho[inst->G->AFS[k]][0];
-		}
-	
-		for (int  k = inst->G->NBS[u]; k < inst->G->NBS[u+1]; k++ )
-		{
-			expr += inst->rho[inst->G->ABS[k]][1];
+			int e = inst->G->adj_edge_idx[u][k];
+			if (u == inst->G->tail[e])
+			{
+				expr += inst->rho[e][0];
+			}
+			else
+			{
+				expr += inst->rho[e][1];
+			}
 		}
 		inst->model.add(expr <= inst->pi[inst->v_color[u]]);
 		expr.end();
@@ -143,10 +146,10 @@ void SanSegundoBound_ModelSolve(instance *inst)
 	ofstream sol_policy_SUMMARY(std::string(inst->istname_graph) + ".rho.sol");
 
 	// Print the variables rho[e][u] to the file
-	for (int e = 0; e < inst->G->m; e++)
+	for (int e = 0; e < inst->G->nedges; e++)
 	{
-		sol_policy_SUMMARY << inst->G->T[e] + 1 << "\t"
-				<< inst->G->H[e] + 1 << "\t"
+		sol_policy_SUMMARY << inst->G->tail[e] + 1 << "\t"
+				<< inst->G->head[e] + 1 << "\t"
 				<< inst->cplex.getValue(inst->rho[e][0]) << "\t"
 				<< inst->cplex.getValue(inst->rho[e][1]) << "\n";
 	}
@@ -161,7 +164,7 @@ void SanSegundoBound_ModelSolve(instance *inst)
 void SanSegundoBound_Free (instance *inst)
 /***************************************************************************/
 {
-	for(int e = 0; e < inst->G->m; e++) {
+	for(int e = 0; e < inst->G->nedges; e++) {
         inst->rho[e].end();
     }
     inst->rho.end();

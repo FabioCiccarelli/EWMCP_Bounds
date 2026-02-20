@@ -23,7 +23,7 @@ The executable generated from this code follows this command structure:
 |-----------|-------------|---------|
 | `graph_file` | Path to the input graph file | DIMACS format file |
 | `weights_file` | Path to the edge weights file | One weight per line |
-| `approach` | Bounding approach to use | `SS` (San Segundo) or `SH` (Shimizu) |
+| `approach` | Bounding approach to use | `SS` (San Segundo et al.), `SH` (Shimizu et al.), or `HFB` (Hosseinian et al.) |
 | `coloring_method` | Graph coloring method | `dsatur` or `random` |
 | `random_seed` | Random seed for coloring | Integer (-1 for dsatur) |
 | `time_limit` | Maximum runtime in seconds | Positive integer |
@@ -32,6 +32,7 @@ The executable generated from this code follows this command structure:
 
 - **`SS`** - San Segundo et al. bound ([EJOR 2019](https://doi.org/10.1016/j.ejor.2019.03.047))
 - **`SH`** - Shimizu et al. bound ([Discrete Optimization 2020](https://doi.org/10.1016/j.disopt.2020.100583))
+- **`HFB`** - Hosseinian et al. bound ([IJOC 2020](https://doi.org/10.1287/ijoc.2019.0898))
 
 ### 🎨 Coloring Method Options
 
@@ -46,8 +47,8 @@ The code reads graph instances in the standard DIMACS format:
 
 ```
 p edge n m         # Problem line: n vertices, m edges
-e i j              # Edge between vertices i and j
-e x y              # Additional edges...
+e i j              # Edge between vertices i and j (m lines)
+
 ```
 
 ### Weights File Format
@@ -87,7 +88,7 @@ The program writes results to **`results.txt`**. Each line contains:
 |-------|-------------|
 | Graph file | Path to input graph |
 | Weights file | Path to weights file |
-| Approach | `SS` or `SH` |
+| Approach | `SS`, `SH` or `HFB`|
 | Coloring method | `dsatur` or `random` |
 | Random seed | Seed value used |
 | Time limit | Time limit in seconds |
@@ -107,6 +108,13 @@ The program writes results to **`results.txt`**. Each line contains:
 |-------|-------------|
 | Bound (Policy 2) | Second policy bound value |
 | Bound (Policy 1) | First policy bound value |
+| Solution status | Algorithm status |
+| Computation time | Runtime in seconds |
+
+### 🟢 HFB Bound (`HFB`) Specific Fields
+| Field | Description |
+|-------|-------------|
+| Bound value | HFB bound value |
 | Solution status | Algorithm status |
 | Computation time | Runtime in seconds |
 

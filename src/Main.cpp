@@ -13,6 +13,7 @@ using namespace std;
 #include "coloring_algorithm.hpp"
 #include "dsatur.hpp"
 #include "SanSegundoBound.h"
+#include "HFBBound.h"
 
 
 /************************************************************************************************/
@@ -43,7 +44,7 @@ int main(int argc, char** argv)
 			cout << "--------------------------------------\n";
 			cout << "Graph instance file" << "\n";
 			cout << "Weights file" << "\n";
-			cout << "Bounding approach (SS or SH)" << "\n";
+			cout << "Bounding approach (SS, SH, or HFB)" << "\n";
 			cout << "Coloring method (dsatur or random)" << "\n";
 			cout << "Random seed (int)\n";
 			cout << "Time Limit (seconds)\n";
@@ -81,62 +82,23 @@ int main(int argc, char** argv)
 	int nodes;
 	int edges;
 
-	int *heads=NULL;
-	int *tails=NULL;
-	double *weights_arcs=NULL;
-	double *weights_nodes=NULL;
-
-	heads=new int[100000000];
-	tails=new int[100000000];
-	weights_arcs=new double[100000000];
-	weights_nodes=new double[100000000];
-
+	int *heads=new int[100000000];
+	int *tails=new int[100000000];
 
 	ReadDIMACSFile(inst.istname_graph,&nodes,&edges,tails,heads,false);
 
-	for(int i=0;i<edges;i++){weights_arcs[i]=0.0;}
-	for(int i=0;i<nodes;i++){weights_nodes[i]=0.0;}
-
 	cout << "GRAPH BUILDING\n";
-	inst.G = buildGraphFF(nodes,edges,heads,tails,weights_nodes,weights_arcs,1);
+	inst.G = new Graph(nodes, edges, heads, tails);
 	cout << "DONE\n";
-
-
-
-#ifdef print_ist_features
-	printGRAPH(G);
-	printFS(G);
-	printBS(G);
-	printAM(G);
-	cin.get();
-#endif
 
 	delete[] heads;
 	delete[] tails;
-	delete []weights_arcs;
-	delete []weights_nodes;
-
-	//	//////////////////////////////////////
-	//	write_edge_weights_file(&inst);
-	//	exit(-1);
-	//	//////////////////////////////////////
-	//
-	//	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//	ofstream info_SUMMARY("info_instance.txt", ios::app);
-	//	info_SUMMARY
-	//	<< inst.G->n << "\t"
-	//	<< inst.G->m << "\t"
-	//	<< inst.istname_graph << "\t"
-	//	<< "\n";
-	//	info_SUMMARY.close();
-	//	exit(-1);
-	//	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/////////////////////////////////////////////////
-	read_edge_weights(inst.G, inst.istname_weights);
+	inst.G->readEdgeWeights(inst.istname_weights);
 	/////////////////////////////////////////////////
 
-	cout << "\nVertices\t" << inst.G->n << "\tEdges\t" << inst.G->m << endl;
+	cout << "\nVertices\t" << inst.G->nnodes << "\tEdges\t" << inst.G->nedges << endl;
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
@@ -147,7 +109,7 @@ int main(int argc, char** argv)
 	clock_t time_end;
 
 	
-	if(inst.PARAM_APPROACH == "SH" || inst.PARAM_APPROACH == "SS")
+	if(inst.PARAM_APPROACH == "SH" || inst.PARAM_APPROACH == "SS" || inst.PARAM_APPROACH == "HFB")
 	{
 		
 		if(inst.PARAM_COLORING_METHOD == "dsatur")
@@ -172,7 +134,7 @@ int main(int argc, char** argv)
 	#endif
 
 	
-		// for(int i=0;i<inst.G->n;i++)
+// for(int i=0;i<inst.G->nnodes;i++)
 		// {
 		// 	// print the color of each vertex
 		// 	cout << "Vertex " << i+1 << " color: " << inst.v_color[i] + 1 << endl;
@@ -196,7 +158,7 @@ int main(int argc, char** argv)
 			ShimizuBound_first_policy(&inst);
 
 		}
-		else
+		else if(inst.PARAM_APPROACH == "SS")
 		{
 			cout << "\n************************************\n";
 			cout << "SAN SEGUNDO BOUND\n\n";
@@ -213,6 +175,19 @@ int main(int argc, char** argv)
 
 			cout << "SanSegundo Bound time: " << inst.SanSegundoBound_Time << endl;
 
+		}
+		else if(inst.PARAM_APPROACH == "HFB")
+		{
+			cout << "\n************************************\n";
+			cout << "HFB BOUND\n";
+			time_start=clock();
+
+			HFBBound(&inst);
+
+			time_end=clock();
+			inst.HFBBound_Time=(double)(time_end-time_start)/(double)CLOCKS_PER_SEC;
+
+			cout << "HFB Bound time: " << inst.HFBBound_Time << endl;
 		}
 		
 		cout << "\n\nDONE!!";
@@ -236,8 +211,8 @@ int main(int argc, char** argv)
 	<< inst.PARAM_RANDOM_SEED << "\t"
 	<< inst.PARAM_TIME_LIMIT << "\t"
 	
-	<< inst.G->n << "\t"
-	<< inst.G->m << "\t";
+	<< inst.G->nnodes << "\t"
+	<< inst.G->nedges << "\t";
 
 
 	if(inst.PARAM_APPROACH == "SH") 
@@ -258,6 +233,14 @@ int main(int argc, char** argv)
 		<< inst.SanSegundoBound_Time << "\t"
 		<< "\n";
 	}
+	else if(inst.PARAM_APPROACH == "HFB") 
+	{
+		info_SUMMARY
+		<< inst.HFBBound << "\t"
+		<< "Optimal" << "\t"
+		<< inst.HFBBound_Time << "\t"
+		<< "\n";
+	}
 	
 	
 	info_SUMMARY.close();
@@ -266,7 +249,7 @@ int main(int argc, char** argv)
 	delete []  inst.istname_graph;
 	delete []  inst.istname_weights;
 
-	deleteGraphFF(inst.G);
+	delete inst.G;
 
 
 	return 0;

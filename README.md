@@ -14,10 +14,11 @@
 
 ## 📖 Overview
 
-This repository contains the C++ implementation of two state-of-the-art upper bounds for the Edge-Weighted Maximum Clique Problem (EWMCP):
+This repository contains the C++ implementation of three state-of-the-art upper bounds for the Edge-Weighted Maximum Clique Problem (EWMCP):
 
 - 🔵 **San Segundo et al. bound** ([EJOR 2019](https://doi.org/10.1016/j.ejor.2019.03.047))
 - 🔴 **Shimizu et al. bound** ([Discrete Optimization 2020](https://doi.org/10.1016/j.disopt.2020.100583))
+- 🟢 **Hosseinian et al. bound** ([IJOC 2020](https://doi.org/10.1287/ijoc.2019.0898))
 
 ## 📝 Associated Research
 
@@ -60,6 +61,8 @@ For detailed compilation and usage instructions, see [`code_usage.md`](code_usag
 ./EWMCP_BOUNDS <graph_file> <weights_file> <approach> <coloring_method> <random_seed> <time_limit>
 ```
 
+Where `<approach>` is one of `SS` (San Segundo et al.), `SH` (Shimizu et al.), or `HFB` (Hosseinian et al.).
+
 **Example:**
 ```bash
 ./EWMCP_BOUNDS ./brock200_1.clq ./brock200_1.clq.weights SS dsatur -1 3600
@@ -72,7 +75,6 @@ Comprehensive computational results and analysis can be found in [`additional_re
 ## 🙏 Acknowledgments
 
 We would like to thank the contributors of [Brian Crites' graph-coloring repository](https://github.com/brrcrites/graph-coloring/tree/master) for the implementation of the DSATUR algorithm that we have included in our code.
-
 
 ## 📜 License and Citation
 

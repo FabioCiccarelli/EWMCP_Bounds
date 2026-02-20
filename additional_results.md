@@ -11,7 +11,7 @@
 
 ## 📋 Overview
 
-This document contains additional numerical results that supplement those presented in the main research paper. These extended results provide insights into the performance and behavior of the proposed upper bounds.
+This document contains additional numerical results that supplement those presented in the main paper. These extended results provide insights into the performance and behavior of the proposed upper bounds.
 
 ## 📖 Table Structure Reference
 

@@ -1,12 +1,8 @@
 
 .vscode/settings.json
-EWMCP_Bounds
-Makefile
 src/.vscode/c_cpp_properties.json
 src/.vscode/settings.json
-src/dsatur.o
-src/coloring_algorithm.o
-src/Graph_v4.o
-src/global_functions.o
-src/Main.o
-src/SanSegundoBound.o
+
+# Build outputs
+bin/
+obj/
