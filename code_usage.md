@@ -14,7 +14,7 @@
 The executable generated from this code follows this command structure:
 
 ```bash
-./EWMCP_BOUNDS <graph_file> <weights_file> <approach> <coloring_method> <random_seed> <time_limit>
+./EWMCP_BOUNDS <graph_file> <weights_file> <approach> <coloring_method> <random_seed> <time_limit> [smart_sorting]
 ```
 
 ## 📋 Parameters Reference
@@ -27,6 +27,7 @@ The executable generated from this code follows this command structure:
 | `coloring_method` | Graph coloring method | `dsatur` or `random` |
 | `random_seed` | Random seed for coloring | Integer (-1 for dsatur) |
 | `time_limit` | Maximum runtime in seconds | Positive integer |
+| `smart_sorting` | **(Optional)** Enable smart stable-set reordering for `SH` | `0` (disabled, default) or `1` (enabled) |
 
 ### 🔵 Approach Options
 
@@ -77,6 +78,14 @@ This command:
 - No random seed needed (`-1`)
 - Sets 1 hour time limit
 
+### Smart Sorting Example (Shimizu Bound)
+
+```bash
+./EWMCP_BOUNDS ./brock200_1.clq ./brock200_1.clq.weights SH dsatur -1 3600 1
+```
+
+When `smart_sorting` is set to `1`, the stable sets (color classes) produced by the graph coloring are reordered before computing the Shimizu bound. Specifically, for each stable set, a weight is computed as the sum of the edge weights of the stars of its vertices; the stable sets are then sorted so that those with higher weight receive higher color indices. This reordering can yield a tighter upper bound.
+
 
 
 ## 📤 Output Format
@@ -94,6 +103,7 @@ The program writes results to **`results.txt`**. Each line contains:
 | Time limit | Time limit in seconds |
 | Vertices | Number of graph vertices |
 | Edges | Number of graph edges |
+| Smart sorting | `0` or `1` |
 
 ### 🔵 San Segundo Bound (`SS`) Specific Fields
 | Field | Description |

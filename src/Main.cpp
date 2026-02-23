@@ -13,6 +13,7 @@ using namespace std;
 #include "coloring_algorithm.hpp"
 #include "dsatur.hpp"
 #include "SanSegundoBound.h"
+#include "ShimizuBound.h"
 #include "HFBBound.h"
 
 
@@ -48,13 +49,14 @@ int main(int argc, char** argv)
 			cout << "Coloring method (dsatur or random)" << "\n";
 			cout << "Random seed (int)\n";
 			cout << "Time Limit (seconds)\n";
+			cout << "Smart sorting (0 or 1, optional, default 0, only for SH)\n";
 			cout << "--------------------------------------\n";
 
 			exit(0);
 		} 
 	}
 
-	else if (argc == 7)
+	else if (argc == 7 || argc == 8)
 	{
 		strcpy(inst.istname_graph, argv[1]);
 		strcpy(inst.istname_weights, argv[2]);
@@ -62,6 +64,7 @@ int main(int argc, char** argv)
 		inst.PARAM_COLORING_METHOD = argv[4];
 		inst.PARAM_RANDOM_SEED = atoi(argv[5]);
 		inst.PARAM_TIME_LIMIT = atof(argv[6]);
+		inst.PARAM_SMART_SORTING = (argc == 8) ? (atoi(argv[7]) != 0) : false;
 	}
 	else {cout << "ERROR NUMBER STANDARD PARAMETERS" << endl;exit(2);}
 
@@ -74,6 +77,7 @@ int main(int argc, char** argv)
 
 	cout << "PARAM_RANDOM_SEED: ->\t" <<  inst.PARAM_RANDOM_SEED << endl;
 	cout << "PARAM_TIME_LIMIT: ->\t" <<  inst.PARAM_TIME_LIMIT << endl;
+	cout << "PARAM_SMART_SORTING: ->\t" <<  inst.PARAM_SMART_SORTING << endl;
 
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -147,7 +151,7 @@ int main(int argc, char** argv)
 			cout << "Shimizu BOUND\n";
 			time_start=clock();
 		
-			ShimizuBound(&inst);
+			ShimizuBound(&inst, inst.PARAM_SMART_SORTING);
 			
 			time_end=clock();
 
@@ -210,6 +214,7 @@ int main(int argc, char** argv)
 	<< inst.PARAM_COLORING_METHOD << "\t"
 	<< inst.PARAM_RANDOM_SEED << "\t"
 	<< inst.PARAM_TIME_LIMIT << "\t"
+	<< inst.PARAM_SMART_SORTING << "\t"
 	
 	<< inst.G->nnodes << "\t"
 	<< inst.G->nedges << "\t";

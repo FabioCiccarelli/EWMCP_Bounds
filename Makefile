@@ -16,6 +16,7 @@ OBJS = \
 	$(OBJDIR)/graph.o \
 	$(OBJDIR)/global_functions.o \
 	$(OBJDIR)/SanSegundoBound.o \
+	$(OBJDIR)/ShimizuBound.o \
 	$(OBJDIR)/HFBBound.o
 
 # CPLEX VERSION (LIBS and INCLUDE files)

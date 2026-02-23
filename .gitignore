@@ -6,3 +6,6 @@ src/.vscode/settings.json
 # Build outputs
 bin/
 obj/
+
+# Tests
+runlist.txt

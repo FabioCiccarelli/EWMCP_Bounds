@@ -58,14 +58,14 @@ For detailed compilation and usage instructions, see [`code_usage.md`](code_usag
 
 **Basic usage:**
 ```bash
-./EWMCP_BOUNDS <graph_file> <weights_file> <approach> <coloring_method> <random_seed> <time_limit>
+./EWMCP_BOUNDS <graph_file> <weights_file> <approach> <coloring_method> <random_seed> <time_limit> [smart_sorting]
 ```
 
-Where `<approach>` is one of `SS` (San Segundo et al.), `SH` (Shimizu et al.), or `HFB` (Hosseinian et al.).
+Where `<approach>` is one of `SS` (San Segundo et al.), `SH` (Shimizu et al.), or `HFB` (Hosseinian et al.). The optional `smart_sorting` flag (`0` or `1`, default `0`) enables a smart reordering of the stable sets for the Shimizu bound (`SH`).
 
 **Example:**
 ```bash
-./EWMCP_BOUNDS ./brock200_1.clq ./brock200_1.clq.weights SS dsatur -1 3600
+./EWMCP_BOUNDS ./brock200_1.clq ./brock200_1.clq.weights SH dsatur -1 3600 1
 ```
 
 ## 📊 Results
