@@ -43,7 +43,8 @@ typedef struct
 	///////////////////////////////////PARAMETERS//////////////////////////////////
 	int PARAM_RANDOM_SEED;
 	double PARAM_TIME_LIMIT;
-	bool PARAM_SMART_SORTING = false;
+	string PARAM_SORTING_STRATEGY = "natural";  // "natural", "size", or "weight"
+	int PARAM_SORTING_SENSE = 1;                // +1 = ascending, -1 = descending
 	///////////////////////////////////////////////////////////////////////////////
 
 

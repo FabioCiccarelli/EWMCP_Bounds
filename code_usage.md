@@ -14,20 +14,22 @@
 The executable generated from this code follows this command structure:
 
 ```bash
-./EWMCP_BOUNDS <graph_file> <weights_file> <approach> <coloring_method> <random_seed> <time_limit> [smart_sorting]
+./EWMCP_BOUNDS <instance_path> --bound <SH|SS|HFB> [options]
 ```
+
+The edge weights file is derived automatically as `<instance_path>.weights`.
 
 ## 📋 Parameters Reference
 
-| Parameter | Description | Options |
-|-----------|-------------|---------|
-| `graph_file` | Path to the input graph file | DIMACS format file |
-| `weights_file` | Path to the edge weights file | One weight per line |
-| `approach` | Bounding approach to use | `SS` (San Segundo et al.), `SH` (Shimizu et al.), or `HFB` (Hosseinian et al.) |
-| `coloring_method` | Graph coloring method | `dsatur` or `random` |
-| `random_seed` | Random seed for coloring | Integer (-1 for dsatur) |
-| `time_limit` | Maximum runtime in seconds | Positive integer |
-| `smart_sorting` | **(Optional)** Enable smart stable-set reordering for `SH` | `0` (disabled, default) or `1` (enabled) |
+| Parameter | Description | Options | Default |
+|-----------|-------------|---------|--------|
+| `instance_path` | Path to the input graph file (positional, required) | DIMACS format file | — |
+| `--bound` | Bounding approach to use (required) | `SS`, `SH`, or `HFB` | — |
+| `--coloring` | Graph coloring method | `dsatur` or `random` | `dsatur` |
+| `--seed` | Random seed for coloring | Integer | `-1` |
+| `--time-limit` | Maximum runtime in seconds | Positive number | `3600` |
+| `--sorting-strategy` | Stable set sorting strategy (only for `SH`) | `natural`, `size`, or `weight` | `natural` |
+| `--sorting-sense` | Sorting direction (only for `size` and `weight` strategies) | `1` (ascending) or `-1` (descending) | `1` |
 
 ### 🔵 Approach Options
 
@@ -39,6 +41,18 @@ The executable generated from this code follows this command structure:
 
 - **`dsatur`** - DSATUR algorithm (recommended)
 - **`random`** - Random coloring method
+
+### 🔄 Sorting Strategy Options (Shimizu bound only)
+
+The Shimizu bound depends on the ordering of the stable sets (color classes). Three strategies are available:
+
+- **`natural`** — Uses the ordering returned by the coloring algorithm without any modification. This is the default.
+- **`size`** — Sorts the stable sets by the number of vertices they contain.
+- **`weight`** — Sorts the stable sets by a score computed as follows. Given *k* stable sets, for each vertex *v* a score γ(*v*) is computed as the sum of the weights of the *k*-1 heaviest edges incident on *v*. The score of a stable set is then the sum of γ(*v*) over all its vertices.
+
+The **`--sorting-sense`** parameter controls the sort direction:
+- **`1`** (ascending): lightest/smallest stable sets receive lower indices, heaviest/largest receive higher indices.
+- **`-1`** (descending): heaviest/largest stable sets receive lower indices, lightest/smallest receive higher indices.
 
 ## 📄 Input File Formats
 
@@ -62,72 +76,72 @@ weight_2           # Weight for second edge
 ...
 ```
 
+The weights file is expected at `<instance_path>.weights` (automatically derived from the instance path).
+
 ## 🔧 Example Usage
 
-### Basic Example
+### San Segundo Bound
 
 ```bash
-./EWMCP_BOUNDS ./brock200_1.clq ./brock200_1.clq.weights SS dsatur -1 3600
+./EWMCP_BOUNDS ./brock200_1.clq --bound SS --coloring dsatur --time-limit 3600
 ```
 
 This command:
 - Uses graph `brock200_1.clq`
-- Uses weights from `brock200_1.clq.weights`
+- Automatically loads weights from `brock200_1.clq.weights`
 - Applies San Segundo bound (`SS`)
 - Uses DSATUR coloring
-- No random seed needed (`-1`)
-- Sets 1 hour time limit
 
-### Smart Sorting Example (Shimizu Bound)
+### Shimizu Bound with Weight-Based Sorting
 
 ```bash
-./EWMCP_BOUNDS ./brock200_1.clq ./brock200_1.clq.weights SH dsatur -1 3600 1
+./EWMCP_BOUNDS ./brock200_1.clq --bound SH --coloring dsatur --sorting-strategy weight --sorting-sense 1
 ```
 
-When `smart_sorting` is set to `1`, the stable sets (color classes) produced by the graph coloring are reordered before computing the Shimizu bound. Specifically, for each stable set, a weight is computed as the sum of the edge weights of the stars of its vertices; the stable sets are then sorted so that those with higher weight receive higher color indices. This reordering can yield a tighter upper bound.
+This reorders the stable sets by weight score in ascending order (heaviest stable sets at higher color indices) before computing the Shimizu bound.
 
+### Shimizu Bound with Size-Based Sorting
 
+```bash
+./EWMCP_BOUNDS ./brock200_1.clq --bound SH --coloring random --seed 42 --sorting-strategy size --sorting-sense -1
+```
+
+This uses a random coloring with seed 42, then sorts stable sets by size in descending order.
+
+### HFB Bound
+
+```bash
+./EWMCP_BOUNDS ./brock200_1.clq --bound HFB --coloring dsatur --time-limit 60
+```
 
 ## 📤 Output Format
 
-The program writes results to **`results.txt`**. Each line contains:
+The program writes results to **`results.txt`** (appending). Each line contains the same columns regardless of the approach, separated by tabs:
 
-###  Common Fields (All Approaches)
-| Field | Description |
-|-------|-------------|
-| Graph file | Path to input graph |
-| Weights file | Path to weights file |
-| Approach | `SS`, `SH` or `HFB`|
-| Coloring method | `dsatur` or `random` |
-| Random seed | Seed value used |
+| Column | Description |
+|--------|-------------|
+| Instance | Path to input graph |
+| Approach | `SS`, `SH`, or `HFB` |
+| Coloring | `dsatur` or `random` |
+| Seed | Random seed value |
 | Time limit | Time limit in seconds |
+| Sorting strategy | `natural`, `size`, `weight`, or `none` (if not `SH`) |
+| Sorting sense | `1`, `-1`, or `none` (if not applicable) |
 | Vertices | Number of graph vertices |
 | Edges | Number of graph edges |
-| Smart sorting | `0` or `1` |
+| Num. colors | Number of colors used |
+| Bound value | Main bound value |
+| Bound value 2 | Secondary bound value (or `none`) |
+| Status | Solution status |
+| Time | Computation time in seconds |
 
-### 🔵 San Segundo Bound (`SS`) Specific Fields
-| Field | Description |
-|-------|-------------|
-| `cplex.getObjValue()` | CPLEX objective value |
-| `cplex.getBestObjValue()` | CPLEX best bound |
-| Solution status | CPLEX solution status |
-| Computation time | Runtime in seconds |
+### Approach-Specific Fields
 
-### 🔴 Shimizu Bound (`SH`) Specific Fields
-| Field | Description |
-|-------|-------------|
-| Bound (Policy 2) | Second policy bound value |
-| Bound (Policy 1) | First policy bound value |
-| Solution status | Algorithm status |
-| Computation time | Runtime in seconds |
-
-### 🟢 HFB Bound (`HFB`) Specific Fields
-| Field | Description |
-|-------|-------------|
-| Bound value | HFB bound value |
-| Solution status | Algorithm status |
-| Computation time | Runtime in seconds |
-
+| Approach | Bound value | Bound value 2 | Status |
+|----------|------------|---------------|--------|
+| **SH** | Shimizu bound (Policy 2) | Shimizu bound (Policy 1) | `Optimal` |
+| **SS** | CPLEX objective value | CPLEX best bound | CPLEX status |
+| **HFB** | HFB bound value | `none` | `Optimal` |
 
 ---
 

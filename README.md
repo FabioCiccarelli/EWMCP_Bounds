@@ -58,14 +58,33 @@ For detailed compilation and usage instructions, see [`code_usage.md`](code_usag
 
 **Basic usage:**
 ```bash
-./EWMCP_BOUNDS <graph_file> <weights_file> <approach> <coloring_method> <random_seed> <time_limit> [smart_sorting]
+./EWMCP_BOUNDS <instance_path> --bound <SH|SS|HFB> [options]
 ```
 
-Where `<approach>` is one of `SS` (San Segundo et al.), `SH` (Shimizu et al.), or `HFB` (Hosseinian et al.). The optional `smart_sorting` flag (`0` or `1`, default `0`) enables a smart reordering of the stable sets for the Shimizu bound (`SH`).
+The edge weights file is derived automatically as `<instance_path>.weights`.
 
-**Example:**
+Where `--bound` specifies the bounding approach: `SS` (San Segundo et al.), `SH` (Shimizu et al.), or `HFB` (Hosseinian et al.).
+
+**Available options:**
+| Option | Values | Default | Description |
+|--------|--------|---------|-------------|
+| `--bound` | `SH`, `SS`, `HFB` | *(required)* | Bounding approach |
+| `--coloring` | `dsatur`, `random` | `dsatur` | Graph coloring method |
+| `--seed` | integer | `-1` | Random seed (for `random` coloring) |
+| `--time-limit` | seconds | `3600` | Maximum runtime |
+| `--sorting-strategy` | `natural`, `size`, `weight` | `natural` | Stable set sorting for `SH` bound |
+| `--sorting-sense` | `1`, `-1` | `1` | Sort direction: 1=ascending, -1=descending |
+
+**Examples:**
 ```bash
-./EWMCP_BOUNDS ./brock200_1.clq ./brock200_1.clq.weights SH dsatur -1 3600 1
+# San Segundo bound with DSATUR coloring
+./EWMCP_BOUNDS ./brock200_1.clq --bound SS --coloring dsatur --time-limit 3600
+
+# Shimizu bound with weight-based sorting (ascending)
+./EWMCP_BOUNDS ./brock200_1.clq --bound SH --coloring dsatur --sorting-strategy weight --sorting-sense 1
+
+# Shimizu bound with size-based sorting (descending)
+./EWMCP_BOUNDS ./brock200_1.clq --bound SH --coloring random --seed 42 --sorting-strategy size --sorting-sense -1
 ```
 
 ## 📊 Results

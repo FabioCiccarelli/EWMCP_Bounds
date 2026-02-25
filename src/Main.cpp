@@ -33,40 +33,113 @@ int main(int argc, char** argv)
 	inst.istname_graph=new char[2000];
 	inst.istname_weights=new char[2000];
 
-	inst.PARAM_APPROACH = new char[10];
+	// Default parameter values
+	inst.PARAM_APPROACH = "";
+	inst.PARAM_COLORING_METHOD = "dsatur";
+	inst.PARAM_RANDOM_SEED = -1;
+	inst.PARAM_TIME_LIMIT = 3600.0;
+	inst.PARAM_SORTING_STRATEGY = "natural";
+	inst.PARAM_SORTING_SENSE = 1;
 
-	if (argc == 2)
+	if (argc < 2)
 	{
-		string arg = argv[1];
-		if(arg == "--help")
+		cout << "Usage: ./EWMCP_BOUNDS <instance_path> --bound <SH|SS|HFB> [options]" << endl;
+		cout << "Use --help for more information." << endl;
+		exit(1);
+	}
+
+	string arg1 = argv[1];
+
+	if (arg1 == "--help")
+	{
+		cout << "----------------------------------------------\n";
+		cout << "             PROGRAM USAGE                    \n";
+		cout << "----------------------------------------------\n";
+		cout << "./EWMCP_BOUNDS <instance_path> [options]\n\n";
+		cout << "The weights file is derived automatically as <instance_path>.weights\n\n";
+		cout << "Options:\n";
+		cout << "  --bound <SH|SS|HFB>              Bounding approach (required)\n";
+		cout << "  --coloring <dsatur|random>        Coloring method (default: dsatur)\n";
+		cout << "  --seed <int>                     Random seed (default: -1, used with random coloring)\n";
+		cout << "  --time-limit <seconds>           Time limit in seconds (default: 3600)\n";
+		cout << "  --sorting-strategy <natural|size|weight>\n";
+		cout << "                                   Stable set sorting strategy for SH bound (default: natural)\n";
+		cout << "  --sorting-sense <1|-1>           Sorting direction: 1=ascending, -1=descending (default: 1)\n";
+		cout << "----------------------------------------------\n";
+		exit(0);
+	}
+
+	// First positional argument: instance path
+	strcpy(inst.istname_graph, argv[1]);
+	// Weights file derived automatically
+	sprintf(inst.istname_weights, "%s.weights", inst.istname_graph);
+
+	// Parse named arguments
+	for (int i = 2; i < argc; i++)
+	{
+		string arg = argv[i];
+
+		if (arg == "--bound" && i + 1 < argc)
 		{
-			cout << "--------------------------------------\n";
-			cout << "          PROGRAM PARAMETERS          \n";
-			cout << "--------------------------------------\n";
-			cout << "Graph instance file" << "\n";
-			cout << "Weights file" << "\n";
-			cout << "Bounding approach (SS, SH, or HFB)" << "\n";
-			cout << "Coloring method (dsatur or random)" << "\n";
-			cout << "Random seed (int)\n";
-			cout << "Time Limit (seconds)\n";
-			cout << "Smart sorting (0 or 1, optional, default 0, only for SH)\n";
-			cout << "--------------------------------------\n";
-
-			exit(0);
-		} 
+			inst.PARAM_APPROACH = argv[++i];
+		}
+		else if (arg == "--coloring" && i + 1 < argc)
+		{
+			inst.PARAM_COLORING_METHOD = argv[++i];
+		}
+		else if (arg == "--seed" && i + 1 < argc)
+		{
+			inst.PARAM_RANDOM_SEED = atoi(argv[++i]);
+		}
+		else if (arg == "--time-limit" && i + 1 < argc)
+		{
+			inst.PARAM_TIME_LIMIT = atof(argv[++i]);
+		}
+		else if (arg == "--sorting-strategy" && i + 1 < argc)
+		{
+			inst.PARAM_SORTING_STRATEGY = argv[++i];
+		}
+		else if (arg == "--sorting-sense" && i + 1 < argc)
+		{
+			inst.PARAM_SORTING_SENSE = atoi(argv[++i]);
+		}
+		else
+		{
+			cout << "ERROR: Unrecognized option or missing value: " << arg << endl;
+			exit(2);
+		}
 	}
 
-	else if (argc == 7 || argc == 8)
+	// Validate required parameters
+	if (inst.PARAM_APPROACH.empty())
 	{
-		strcpy(inst.istname_graph, argv[1]);
-		strcpy(inst.istname_weights, argv[2]);
-		inst.PARAM_APPROACH = argv[3];
-		inst.PARAM_COLORING_METHOD = argv[4];
-		inst.PARAM_RANDOM_SEED = atoi(argv[5]);
-		inst.PARAM_TIME_LIMIT = atof(argv[6]);
-		inst.PARAM_SMART_SORTING = (argc == 8) ? (atoi(argv[7]) != 0) : false;
+		cout << "ERROR: --bound is required. Use --help for usage information." << endl;
+		exit(2);
 	}
-	else {cout << "ERROR NUMBER STANDARD PARAMETERS" << endl;exit(2);}
+
+	if (inst.PARAM_APPROACH != "SH" && inst.PARAM_APPROACH != "SS" && inst.PARAM_APPROACH != "HFB")
+	{
+		cout << "ERROR: --bound must be SH, SS, or HFB." << endl;
+		exit(2);
+	}
+
+	if (inst.PARAM_COLORING_METHOD != "dsatur" && inst.PARAM_COLORING_METHOD != "random")
+	{
+		cout << "ERROR: --coloring must be dsatur or random." << endl;
+		exit(2);
+	}
+
+	if (inst.PARAM_SORTING_STRATEGY != "natural" && inst.PARAM_SORTING_STRATEGY != "size" && inst.PARAM_SORTING_STRATEGY != "weight")
+	{
+		cout << "ERROR: --sorting-strategy must be natural, size, or weight." << endl;
+		exit(2);
+	}
+
+	if (inst.PARAM_SORTING_SENSE != 1 && inst.PARAM_SORTING_SENSE != -1)
+	{
+		cout << "ERROR: --sorting-sense must be 1 or -1." << endl;
+		exit(2);
+	}
 
 	cout << "\n";
 	cout << "istname_graph: ->\t" <<  inst.istname_graph << endl;
@@ -77,7 +150,8 @@ int main(int argc, char** argv)
 
 	cout << "PARAM_RANDOM_SEED: ->\t" <<  inst.PARAM_RANDOM_SEED << endl;
 	cout << "PARAM_TIME_LIMIT: ->\t" <<  inst.PARAM_TIME_LIMIT << endl;
-	cout << "PARAM_SMART_SORTING: ->\t" <<  inst.PARAM_SMART_SORTING << endl;
+	cout << "PARAM_SORTING_STRATEGY: ->\t" <<  inst.PARAM_SORTING_STRATEGY << endl;
+	cout << "PARAM_SORTING_SENSE: ->\t" <<  inst.PARAM_SORTING_SENSE << endl;
 
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -151,7 +225,7 @@ int main(int argc, char** argv)
 			cout << "Shimizu BOUND\n";
 			time_start=clock();
 		
-			ShimizuBound(&inst, inst.PARAM_SMART_SORTING);
+			ShimizuBound(&inst);
 			
 			time_end=clock();
 
@@ -206,19 +280,26 @@ int main(int argc, char** argv)
 
 
 	ofstream info_SUMMARY("results.txt", ios::app);
+
+	// Uniform output format: same columns for all approaches
+	// Columns: instance | approach | coloring | seed | time_limit | sorting_strategy | sorting_sense |
+	//          nnodes | nedges | num_colors | bound_value | bound_value_2 | status | time
+
+	string sorting_strategy_out = (inst.PARAM_APPROACH == "SH") ? inst.PARAM_SORTING_STRATEGY : "none";
+	string sorting_sense_out = (inst.PARAM_APPROACH == "SH" && inst.PARAM_SORTING_STRATEGY != "natural")
+	                           ? to_string(inst.PARAM_SORTING_SENSE) : "none";
+
 	info_SUMMARY
 	<< inst.istname_graph << "\t"
-	<< inst.istname_weights << "\t"
-	
 	<< inst.PARAM_APPROACH << "\t"
 	<< inst.PARAM_COLORING_METHOD << "\t"
 	<< inst.PARAM_RANDOM_SEED << "\t"
 	<< inst.PARAM_TIME_LIMIT << "\t"
-	<< inst.PARAM_SMART_SORTING << "\t"
-	
+	<< sorting_strategy_out << "\t"
+	<< sorting_sense_out << "\t"
 	<< inst.G->nnodes << "\t"
-	<< inst.G->nedges << "\t";
-
+	<< inst.G->nedges << "\t"
+	<< inst.num_colors << "\t";
 
 	if(inst.PARAM_APPROACH == "SH") 
 	{
@@ -242,6 +323,7 @@ int main(int argc, char** argv)
 	{
 		info_SUMMARY
 		<< inst.HFBBound << "\t"
+		<< "none" << "\t"
 		<< "Optimal" << "\t"
 		<< inst.HFBBound_Time << "\t"
 		<< "\n";

@@ -6,6 +6,8 @@ src/.vscode/settings.json
 # Build outputs
 bin/
 obj/
+data/DIMACS/
 
 # Tests
 runlist.txt
+results.txt
