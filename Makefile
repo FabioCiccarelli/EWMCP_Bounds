@@ -17,7 +17,9 @@ OBJS = \
 	$(OBJDIR)/global_functions.o \
 	$(OBJDIR)/SanSegundoBound.o \
 	$(OBJDIR)/ShimizuBound.o \
-	$(OBJDIR)/HFBBound.o
+	$(OBJDIR)/HFBBound.o \
+	$(OBJDIR)/LPBound.o \
+	$(OBJDIR)/TSM-mod.o
 
 # CPLEX VERSION (LIBS and INCLUDE files)
 

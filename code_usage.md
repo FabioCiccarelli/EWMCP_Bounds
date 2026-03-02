@@ -14,7 +14,7 @@
 The executable generated from this code follows this command structure:
 
 ```bash
-./EWMCP_BOUNDS <instance_path> --bound <SH|SS|HFB> [options]
+./EWMCP_BOUNDS <instance_path> --bound <SH|SS|HFB|LP> [options]
 ```
 
 The edge weights file is derived automatically as `<instance_path>.weights`.
@@ -24,7 +24,7 @@ The edge weights file is derived automatically as `<instance_path>.weights`.
 | Parameter | Description | Options | Default |
 |-----------|-------------|---------|--------|
 | `instance_path` | Path to the input graph file (positional, required) | DIMACS format file | — |
-| `--bound` | Bounding approach to use (required) | `SS`, `SH`, or `HFB` | — |
+| `--bound` | Bounding approach to use (required) | `SS`, `SH`, `HFB`, or `LP` | — |
 | `--coloring` | Graph coloring method | `dsatur` or `random` | `dsatur` |
 | `--seed` | Random seed for coloring | Integer | `-1` |
 | `--time-limit` | Maximum runtime in seconds | Positive number | `3600` |
@@ -36,6 +36,7 @@ The edge weights file is derived automatically as `<instance_path>.weights`.
 - **`SS`** - San Segundo et al. bound ([EJOR 2019](https://doi.org/10.1016/j.ejor.2019.03.047))
 - **`SH`** - Shimizu et al. bound ([Discrete Optimization 2020](https://doi.org/10.1016/j.disopt.2020.100583))
 - **`HFB`** - Hosseinian et al. bound ([IJOC 2020](https://doi.org/10.1287/ijoc.2019.0898))
+- **`LP`** - LP bound with cutting-plane independent set separation
 
 ### 🎨 Coloring Method Options
 
@@ -114,6 +115,14 @@ This uses a random coloring with seed 42, then sorts stable sets by size in desc
 ./EWMCP_BOUNDS ./brock200_1.clq --bound HFB --coloring dsatur --time-limit 60
 ```
 
+### LP Bound
+
+```bash
+./EWMCP_BOUNDS ./brock200_1.clq --bound LP --coloring dsatur --time-limit 3600
+```
+
+The LP bound uses a cutting-plane approach. It starts from an LP relaxation with independent set constraints derived from the coloring heuristic, then iteratively separates violated independent set constraints by solving a Maximum Weighted Independent Set problem (via the TSM-MWC solver on the complement graph). The process terminates when no more violated constraints are found.
+
 ## 📤 Output Format
 
 The program writes results to **`results.txt`** (appending). Each line contains the same columns regardless of the approach, separated by tabs:
@@ -121,7 +130,7 @@ The program writes results to **`results.txt`** (appending). Each line contains 
 | Column | Description |
 |--------|-------------|
 | Instance | Path to input graph |
-| Approach | `SS`, `SH`, or `HFB` |
+| Approach | `SS`, `SH`, `HFB`, or `LP` |
 | Coloring | `dsatur` or `random` |
 | Seed | Random seed value |
 | Time limit | Time limit in seconds |
@@ -142,6 +151,7 @@ The program writes results to **`results.txt`** (appending). Each line contains 
 | **SH** | Shimizu bound (Policy 2) | Shimizu bound (Policy 1) | `Optimal` |
 | **SS** | CPLEX objective value | CPLEX best bound | CPLEX status |
 | **HFB** | HFB bound value | `none` | `Optimal` |
+| **LP** | LP bound value | Number of cuts added | `Optimal` |
 
 ---
 

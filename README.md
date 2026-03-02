@@ -19,6 +19,7 @@ This repository contains the C++ implementation of three state-of-the-art upper 
 - 🔵 **San Segundo et al. bound** ([EJOR 2019](https://doi.org/10.1016/j.ejor.2019.03.047))
 - 🔴 **Shimizu et al. bound** ([Discrete Optimization 2020](https://doi.org/10.1016/j.disopt.2020.100583))
 - 🟢 **Hosseinian et al. bound** ([IJOC 2020](https://doi.org/10.1287/ijoc.2019.0898))
+- 🟡 **LP bound** (cutting-plane approach with independent set separation)
 
 ## 📝 Associated Research
 
@@ -58,17 +59,17 @@ For detailed compilation and usage instructions, see [`code_usage.md`](code_usag
 
 **Basic usage:**
 ```bash
-./EWMCP_BOUNDS <instance_path> --bound <SH|SS|HFB> [options]
+./EWMCP_BOUNDS <instance_path> --bound <SH|SS|HFB|LP> [options]
 ```
 
 The edge weights file is derived automatically as `<instance_path>.weights`.
 
-Where `--bound` specifies the bounding approach: `SS` (San Segundo et al.), `SH` (Shimizu et al.), or `HFB` (Hosseinian et al.).
+Where `--bound` specifies the bounding approach: `SS` (San Segundo et al.), `SH` (Shimizu et al.), `HFB` (Hosseinian et al.), or `LP` (cutting-plane LP bound).
 
 **Available options:**
 | Option | Values | Default | Description |
 |--------|--------|---------|-------------|
-| `--bound` | `SH`, `SS`, `HFB` | *(required)* | Bounding approach |
+| `--bound` | `SH`, `SS`, `HFB`, `LP` | *(required)* | Bounding approach |
 | `--coloring` | `dsatur`, `random` | `dsatur` | Graph coloring method |
 | `--seed` | integer | `-1` | Random seed (for `random` coloring) |
 | `--time-limit` | seconds | `3600` | Maximum runtime |
@@ -85,6 +86,9 @@ Where `--bound` specifies the bounding approach: `SS` (San Segundo et al.), `SH`
 
 # Shimizu bound with size-based sorting (descending)
 ./EWMCP_BOUNDS ./brock200_1.clq --bound SH --coloring random --seed 42 --sorting-strategy size --sorting-sense -1
+
+# LP bound with cutting planes
+./EWMCP_BOUNDS ./brock200_1.clq --bound LP --coloring dsatur --time-limit 3600
 ```
 
 ## 📊 Results

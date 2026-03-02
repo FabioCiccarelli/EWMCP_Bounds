@@ -15,6 +15,7 @@ using namespace std;
 #include "SanSegundoBound.h"
 #include "ShimizuBound.h"
 #include "HFBBound.h"
+#include "LPBound.h"
 
 
 /************************************************************************************************/
@@ -58,7 +59,7 @@ int main(int argc, char** argv)
 		cout << "./EWMCP_BOUNDS <instance_path> [options]\n\n";
 		cout << "The weights file is derived automatically as <instance_path>.weights\n\n";
 		cout << "Options:\n";
-		cout << "  --bound <SH|SS|HFB>              Bounding approach (required)\n";
+		cout << "  --bound <SH|SS|HFB|LP>           Bounding approach (required)\n";
 		cout << "  --coloring <dsatur|random>        Coloring method (default: dsatur)\n";
 		cout << "  --seed <int>                     Random seed (default: -1, used with random coloring)\n";
 		cout << "  --time-limit <seconds>           Time limit in seconds (default: 3600)\n";
@@ -117,9 +118,9 @@ int main(int argc, char** argv)
 		exit(2);
 	}
 
-	if (inst.PARAM_APPROACH != "SH" && inst.PARAM_APPROACH != "SS" && inst.PARAM_APPROACH != "HFB")
+	if (inst.PARAM_APPROACH != "SH" && inst.PARAM_APPROACH != "SS" && inst.PARAM_APPROACH != "HFB" && inst.PARAM_APPROACH != "LP")
 	{
-		cout << "ERROR: --bound must be SH, SS, or HFB." << endl;
+		cout << "ERROR: --bound must be SH, SS, HFB, or LP." << endl;
 		exit(2);
 	}
 
@@ -187,7 +188,7 @@ int main(int argc, char** argv)
 	clock_t time_end;
 
 	
-	if(inst.PARAM_APPROACH == "SH" || inst.PARAM_APPROACH == "SS" || inst.PARAM_APPROACH == "HFB")
+	if(inst.PARAM_APPROACH == "SH" || inst.PARAM_APPROACH == "SS" || inst.PARAM_APPROACH == "HFB" || inst.PARAM_APPROACH == "LP")
 	{
 		
 		if(inst.PARAM_COLORING_METHOD == "dsatur")
@@ -267,6 +268,19 @@ int main(int argc, char** argv)
 
 			cout << "HFB Bound time: " << inst.HFBBound_Time << endl;
 		}
+		else if(inst.PARAM_APPROACH == "LP")
+		{
+			cout << "\n************************************\n";
+			cout << "LP BOUND\n";
+			time_start=clock();
+
+			LPBound_Solve(&inst);
+
+			time_end=clock();
+			inst.LPBound_Time=(double)(time_end-time_start)/(double)CLOCKS_PER_SEC;
+
+			cout << "LP Bound time: " << inst.LPBound_Time << endl;
+		}
 		
 		cout << "\n\nDONE!!";
 		cout << "\n************************************\n\n\n";
@@ -326,6 +340,15 @@ int main(int argc, char** argv)
 		<< "none" << "\t"
 		<< "Optimal" << "\t"
 		<< inst.HFBBound_Time << "\t"
+		<< "\n";
+	}
+	else if(inst.PARAM_APPROACH == "LP") 
+	{
+		info_SUMMARY
+		<< inst.LPBound << "\t"
+		<< inst.LPBound_num_cuts << "\t"
+		<< (inst.LPBound_TimeLimitHit ? "TimeLimit" : "Optimal") << "\t"
+		<< inst.LPBound_Time << "\t"
 		<< "\n";
 	}
 	

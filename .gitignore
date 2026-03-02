@@ -10,4 +10,5 @@ data/DIMACS/
 
 # Tests
 runlist.txt
+runlist_LP.txt
 results.txt

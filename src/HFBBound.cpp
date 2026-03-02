@@ -56,7 +56,7 @@ void HFBBound(instance *inst)
 		bound += gamma[indices[k]];
 	}
 
-	inst->HFBBound = bound;
+	inst->HFBBound = floor(bound);
 
 	cout << "\nHFB Bound value: " << inst->HFBBound << endl;
 

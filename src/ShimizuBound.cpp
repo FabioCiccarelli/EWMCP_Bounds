@@ -36,7 +36,7 @@ static void reorder_stable_sets(instance *inst, const string &strategy, int sens
 	else if (strategy == "weight")
 	{
 		// Gamma score: for each vertex, gamma = sum of the (k-1) heaviest
-		// incident edge weights (where k = number of stable sets).
+		// incident edge weights (where k = number of independent sets).
 		vector<double> gamma(inst->G->nnodes, 0.0);
 
 		for (int i = 0; i < inst->G->nnodes; i++)
@@ -98,7 +98,9 @@ void ShimizuBound(instance *inst)
 	// Shimizu bound computation (Policy 2)
 	inst->ShimizuBound = 0.0;
 	int h_u, h_v, u, v;
-	double **MIW; // MIW[i][h] = Weight of the edge of maximum weight linking node i to a node with color h
+
+	// MIW[i][h] = Weight of the edge of maximum weight linking node i to a node with color h
+	double **MIW; 
 
 	double heaviest;
 
@@ -124,10 +126,7 @@ void ShimizuBound(instance *inst)
 
 		h_u = inst->v_color[u];
 		h_v = inst->v_color[v];
-
-		if (h_u == h_v)
-			continue;
-
+		
 		if (h_u < h_v)
 		{
 			if (inst->G->edge_weights[e] > MIW[u][h_v])
@@ -138,7 +137,7 @@ void ShimizuBound(instance *inst)
 			continue;
 		}
 
-		if (h_u > h_v)
+		else if (h_u > h_v)
 		{
 			if (inst->G->edge_weights[e] > MIW[v][h_u])
 			{
@@ -181,6 +180,7 @@ void ShimizuBound(instance *inst)
 		inst->ShimizuBound += heaviest;
 	}
 
+	inst->ShimizuBound = floor(inst->ShimizuBound);
 	cout << "\nShimizu Bound value: " << inst->ShimizuBound << endl;
 
 	for (int i = 0; i < inst->G->nnodes; i++)
@@ -218,10 +218,8 @@ void ShimizuBound_first_policy(instance *inst)
 		h_u = inst->v_color[u];
 		h_v = inst->v_color[v];
 
-		if (h_u == h_v)
-			continue;
 
-		else if (h_u < h_v)
+		if (h_u < h_v)
 		{
 			sigma[u] += inst->G->edge_weights[e];
 			continue;
@@ -251,6 +249,8 @@ void ShimizuBound_first_policy(instance *inst)
 
 		inst->ShimizuBound_first_policy += heaviest;
 	}
+
+	inst->ShimizuBound_first_policy = floor(inst->ShimizuBound_first_policy);
 
 	// cout << "\n\nShimizu Bound (first policy) value: " << inst->ShimizuBound_first_policy << "\n\n" << endl;
 

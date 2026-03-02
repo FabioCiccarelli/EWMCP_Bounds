@@ -47,7 +47,6 @@ void SanSegundoBound_ModelBuild(instance *inst)
 	}
 
 
-
 	// 2. pi[I] >= sum_{e in delta(u)}(rho[e][u]) for all u in V, I = color(u)
 
 	for (int u = 0; u < inst->G->nnodes; u++)
@@ -129,9 +128,9 @@ void SanSegundoBound_ModelSolve(instance *inst)
 	inst-> SanSegundoBound_Time=(double)(time_end-time_start)/(double)CLOCKS_PER_SEC;
 
 	
-	// Get the optimal solution value
-	inst->SanSegundoBound = inst->cplex.getObjValue();
-	inst->SanSegundoBound_BestObjVal = inst->cplex.getBestObjValue();
+	// Get the optimal solution value (floor to integer: valid upper bound)
+	inst->SanSegundoBound = floor(inst->cplex.getObjValue());
+	inst->SanSegundoBound_BestObjVal = floor(inst->cplex.getBestObjValue());
 	inst -> SanSegundoBound_status = inst->cplex.getStatus();
 
 
