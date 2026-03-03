@@ -3,7 +3,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 #define DISABLE_CPLEX_OUTPUT
 // #define print_SANSEGUNDO_BOUND_model
-#define save_best_policy
+// #define save_best_policy
 ///////////////////////////////////////////////////////////////////////////////
 
 #define MULT 100 //used for scaling
@@ -116,8 +116,6 @@ void SanSegundoBound_ModelSolve(instance *inst)
 
 	
 
-
-
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	clock_t time_start=clock();
 
@@ -179,4 +177,143 @@ void SanSegundoBound_Free (instance *inst)
 
 }
 
-	
+
+/***************************************************************************/
+void SanSegundoPooled(instance *inst)
+/***************************************************************************/
+{
+	// Pool of independent sets (each IS is a sorted vector of vertex indices).
+	set<vector<int>> pool;
+
+	// Helper: extract independent sets from a coloring (v_color, num_colors)
+	// and insert them into the pool.
+	auto extract_and_add = [&](int *v_color, int num_colors) {
+		for (int h = 0; h < num_colors; h++) {
+			vector<int> is_h;
+			for (int u = 0; u < inst->G->nnodes; u++) {
+				if (v_color[u] == h) {
+					is_h.push_back(u);
+				}
+			}
+			if (!is_h.empty()) {
+				pool.insert(is_h); 
+			}
+		}
+	};
+
+	// 1. DSATUR coloring
+	dsatur_color(inst);
+	extract_and_add(inst->v_color, inst->num_colors);
+	delete[] inst->v_color;
+	inst->v_color = NULL;
+
+	// 2. Random colorings with seeds {1, 2, ..., 5}
+	int saved_seed = inst->PARAM_RANDOM_SEED;
+	for (int seed = 1; seed <= 5; seed++) {
+		inst->PARAM_RANDOM_SEED = seed;
+		random_color(inst);
+		extract_and_add(inst->v_color, inst->num_colors);
+		delete[] inst->v_color;
+		inst->v_color = NULL;
+	}
+	inst->PARAM_RANDOM_SEED = saved_seed;
+
+	// Convert pool to vector for indexing
+	vector<vector<int>> independent_sets(pool.begin(), pool.end());
+	int num_IS = (int)independent_sets.size();
+
+	// Store the number of unique independent sets
+	inst->num_colors = num_IS;
+
+	cout << "Number of unique independent sets in pool: " << num_IS << endl;
+
+	// 3. Build LP model
+	inst->env = IloEnv();
+	inst->model = IloModel(inst->env);
+
+	// RHO VARIABLES rho[e][u] = fraction of weight of edge e assigned to endpoint u
+	inst->rho = IloArray<IloNumVarArray>(inst->env, inst->G->nedges);
+	for (int e = 0; e < inst->G->nedges; e++) {
+		inst->rho[e] = IloNumVarArray(inst->env, 2, 0, IloInfinity, ILOFLOAT);
+	}
+
+	// PI VARIABLES pi[h] = weight of the heaviest node in independent set h
+	inst->pi = IloNumVarArray(inst->env, num_IS, 0, IloInfinity, ILOFLOAT);
+
+	// OBJECTIVE FUNCTION: minimize sum of pi[h]
+	IloExpr obj(inst->env);
+	for (int h = 0; h < num_IS; h++) {
+		obj += inst->pi[h];
+	}
+	inst->model.add(IloMinimize(inst->env, obj));
+	obj.end();
+
+	// CONSTRAINTS 1: rho[e][0] + rho[e][1] >= w_e for all edges e
+	for (int e = 0; e < inst->G->nedges; e++) {
+		IloExpr expr(inst->env);
+		expr += inst->rho[e][0] + inst->rho[e][1];
+		inst->model.add(expr >= inst->G->edge_weights[e]);
+		expr.end();
+	}
+
+	// CONSTRAINTS 2: for vertex u in V:
+	//   sum_{e in delta(u)} rho[e][u] <= sum_{h: u in IS_h} pi[h]
+	for (int u = 0; u < inst->G->nnodes; u++) {
+		IloExpr expr(inst->env);
+		for (int k = 0; k < inst->G->node_degree[u]; k++) {
+			int e = inst->G->adj_edge_idx[u][k];
+			if (u == inst->G->tail[e]) {
+				expr += inst->rho[e][0];
+			} else {
+				expr += inst->rho[e][1];
+			}
+		}
+		// Find all independent sets h that contain vertex u
+		IloExpr sum_pi(inst->env);
+		for (int h = 0; h < num_IS; h++) {
+			if (find(independent_sets[h].begin(), independent_sets[h].end(), u) != independent_sets[h].end()) {
+				sum_pi += inst->pi[h];
+			}
+		}
+		inst->model.add(expr <= sum_pi);
+		sum_pi.end();
+		expr.end();
+		}
+
+	// 4. Solve LP
+	inst->cplex = IloCplex(inst->model);
+
+#ifdef DISABLE_CPLEX_OUTPUT
+	inst->cplex.setOut(inst->env.getNullStream());
+#endif
+
+	inst->cplex.setParam(IloCplex::Param::TimeLimit, inst->PARAM_TIME_LIMIT);
+	inst->cplex.setParam(IloCplex::Param::Threads, 1);
+	inst->cplex.setParam(IloCplex::Param::RootAlgorithm, CPX_ALG_BARRIER);
+	inst->cplex.setParam(IloCplex::Param::SolutionType, 2);
+
+	clock_t time_start = clock();
+
+	inst->cplex.solve();
+
+	clock_t time_end = clock();
+
+	inst->SanSegundoBound_Time = (double)(time_end - time_start) / (double)CLOCKS_PER_SEC;
+
+	// Get the optimal solution value (floor to integer: valid upper bound)
+	inst->SanSegundoBound = floor(inst->cplex.getObjValue());
+	inst->SanSegundoBound_BestObjVal = floor(inst->cplex.getBestObjValue());
+	inst->SanSegundoBound_status = inst->cplex.getStatus();
+
+	cout << "SanSegundo Pooled Bound value: " << inst->SanSegundoBound << endl;
+
+	// 5. Free CPLEX resources
+	for (int e = 0; e < inst->G->nedges; e++) {
+		inst->rho[e].end();
+	}
+	inst->rho.end();
+	inst->pi.end();
+	inst->cplex.end();
+	inst->model.end();
+	inst->env.end();
+}

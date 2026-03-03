@@ -19,7 +19,8 @@ OBJS = \
 	$(OBJDIR)/ShimizuBound.o \
 	$(OBJDIR)/HFBBound.o \
 	$(OBJDIR)/LPBound.o \
-	$(OBJDIR)/TSM-mod.o
+	$(OBJDIR)/TSM-mod.o \
+	$(OBJDIR)/BranchingTest.o
 
 # CPLEX VERSION (LIBS and INCLUDE files)
 

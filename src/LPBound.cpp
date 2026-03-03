@@ -51,7 +51,6 @@ static Graph* build_complement_graph(Graph *G)
 
 /***************************************************************************/
 // Solve the Maximum Weighted Independent Set problem using CPLEX.
-// Used as fallback when TSM returns an invalid result.
 // Returns the optimal weight, stores the solution in mwis_solution (0/1 per vertex).
 /***************************************************************************/
 static double MWIS_CPLEX(Graph *G, double *weights, int n, vector<int> &mwis_solution)
@@ -152,9 +151,9 @@ void LPBound_Solve(instance *inst)
 	//
 	// where D_u = sum_{e: head(e)=u} c_e.
 	//
-	// The dual has only n constraints (one per vertex, fixed throughout)
+	// The dual has only n constraints (one per vertex)
 	// plus simple variable bounds.  Adding a new independent set becomes
-	// adding a COLUMN (new lambda_h variable) — ideal for barrier.
+	// adding a COLUMN (new lambda_h variable).
 	//
 	// The primal x* values are recovered as the dual multipliers of the
 	// vertex constraints.
@@ -186,9 +185,7 @@ void LPBound_Solve(instance *inst)
 	for (int e = 0; e < m; e++)
 		alpha.add(IloNumVar(env, 0.0, inst->G->edge_weights[e], ILOFLOAT));
 
-	// Vertex constraints (one per vertex, RHS = D_u, range [D_u, +inf))
-	// LHS (without lambda terms):  sum_{e:head=u} alpha_e - sum_{e:tail=u} alpha_e
-	// Lambda columns will contribute +1 for each vertex in the independent set.
+	// Vertex constraints (one per vertex, rhs = D_u)
 	IloRangeArray vertex_con(env);
 	for (int u = 0; u < n; u++)
 	{
@@ -280,7 +277,6 @@ void LPBound_Solve(instance *inst)
 		double dual_obj = cplex.getObjValue();
 
 		// --- Recover primal x* from dual multipliers of vertex constraints ---
-		// Use getDuals with IloNumArray for robustness with barrier solutions
 		IloNumArray duals(env);
 		try {
 			cplex.getDuals(duals, vertex_con);
@@ -441,7 +437,7 @@ void LPBound_Solve(instance *inst)
 			break;
 		}
 
-		// --- Pricing check: is there a violated independent set? ---
+		// --- Pricing check ---
 		if (exact_weight <= 1.0 + 1e-6)
 		{
 			// No violated IS ⇒ dual is optimal ⇒ LP bound converged
@@ -451,7 +447,7 @@ void LPBound_Solve(instance *inst)
 			break;
 		}
 
-		// --- Add new column (independent set) to the dual model ---
+		// --- Add new column to the dual model ---
 		IloNumColumn col = objective(1.0);
 		for (int u : independent_set)
 			col += vertex_con[u](1.0);
@@ -471,10 +467,10 @@ void LPBound_Solve(instance *inst)
 		}
 	}
 
-	// Restore original graph (safety)
+	// Restore original graph
 	inst->G = G_original;
 
-	// Store final result (floor to integer: valid upper bound)
+	// Store final result
 	try {
 		inst->LPBound = floor(cplex.getObjValue());
 	} catch (...) {

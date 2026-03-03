@@ -3,12 +3,14 @@
 src/.vscode/c_cpp_properties.json
 src/.vscode/settings.json
 
-# Build outputs
+# Build outputs and test folder
 bin/
 obj/
+tests/
 data/DIMACS/
-
-# Tests
-runlist.txt
-runlist_LP.txt
 results.txt
+
+
+#temporary 
+partialSol.md
+

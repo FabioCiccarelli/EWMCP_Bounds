@@ -14,7 +14,7 @@
 The executable generated from this code follows this command structure:
 
 ```bash
-./EWMCP_BOUNDS <instance_path> --bound <SH|SS|HFB|LP> [options]
+./EWMCP_BOUNDS <instance_path> --bound <SH|SS|SSpooled|HFB|LP> [options]
 ```
 
 The edge weights file is derived automatically as `<instance_path>.weights`.
@@ -24,8 +24,8 @@ The edge weights file is derived automatically as `<instance_path>.weights`.
 | Parameter | Description | Options | Default |
 |-----------|-------------|---------|--------|
 | `instance_path` | Path to the input graph file (positional, required) | DIMACS format file | — |
-| `--bound` | Bounding approach to use (required) | `SS`, `SH`, `HFB`, or `LP` | — |
-| `--coloring` | Graph coloring method | `dsatur` or `random` | `dsatur` |
+| `--bound` | Bounding approach to use (required) | `SS`, `SSpooled`, `SH`, `HFB`, or `LP` | — |
+| `--coloring` | Graph coloring method (not used by `SSpooled`) | `dsatur` or `random` | `dsatur` |
 | `--seed` | Random seed for coloring | Integer | `-1` |
 | `--time-limit` | Maximum runtime in seconds | Positive number | `3600` |
 | `--sorting-strategy` | Stable set sorting strategy (only for `SH`) | `natural`, `size`, or `weight` | `natural` |
@@ -34,6 +34,7 @@ The edge weights file is derived automatically as `<instance_path>.weights`.
 ### 🔵 Approach Options
 
 - **`SS`** - San Segundo et al. bound ([EJOR 2019](https://doi.org/10.1016/j.ejor.2019.03.047))
+- **`SSpooled`** - San Segundo bound with pooled independent sets (DSATUR + 5 random colorings)
 - **`SH`** - Shimizu et al. bound ([Discrete Optimization 2020](https://doi.org/10.1016/j.disopt.2020.100583))
 - **`HFB`** - Hosseinian et al. bound ([IJOC 2020](https://doi.org/10.1287/ijoc.2019.0898))
 - **`LP`** - LP bound with cutting-plane independent set separation
@@ -93,6 +94,19 @@ This command:
 - Applies San Segundo bound (`SS`)
 - Uses DSATUR coloring
 
+### San Segundo Pooled Bound
+
+```bash
+./EWMCP_BOUNDS ./brock200_1.clq --bound SSpooled --time-limit 3600
+```
+
+This command:
+- Uses graph `brock200_1.clq`
+- Automatically loads weights from `brock200_1.clq.weights`
+- Applies the San Segundo Pooled bound (`SSpooled`)
+- Internally computes DSATUR coloring + 5 random colorings (seeds 1-5), pools all unique independent sets, and solves the San Segundo LP on this enriched set of independent sets
+- The `--coloring` and `--seed` options are ignored for this approach
+
 ### Shimizu Bound with Weight-Based Sorting
 
 ```bash
@@ -130,8 +144,8 @@ The program writes results to **`results.txt`** (appending). Each line contains 
 | Column | Description |
 |--------|-------------|
 | Instance | Path to input graph |
-| Approach | `SS`, `SH`, `HFB`, or `LP` |
-| Coloring | `dsatur` or `random` |
+| Approach | `SS`, `SSpooled`, `SH`, `HFB`, or `LP` |
+| Coloring | `dsatur`, `random`, or `pooled` (for `SSpooled`) |
 | Seed | Random seed value |
 | Time limit | Time limit in seconds |
 | Sorting strategy | `natural`, `size`, `weight`, or `none` (if not `SH`) |
@@ -150,6 +164,7 @@ The program writes results to **`results.txt`** (appending). Each line contains 
 |----------|------------|---------------|--------|
 | **SH** | Shimizu bound (Policy 2) | Shimizu bound (Policy 1) | `Optimal` |
 | **SS** | CPLEX objective value | CPLEX best bound | CPLEX status |
+| **SSpooled** | CPLEX objective value | CPLEX best bound | CPLEX status |
 | **HFB** | HFB bound value | `none` | `Optimal` |
 | **LP** | LP bound value | Number of cuts added | `Optimal` |
 

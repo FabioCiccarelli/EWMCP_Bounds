@@ -17,6 +17,7 @@
 This repository contains the C++ implementation of three state-of-the-art upper bounds for the Edge-Weighted Maximum Clique Problem (EWMCP):
 
 - 🔵 **San Segundo et al. bound** ([EJOR 2019](https://doi.org/10.1016/j.ejor.2019.03.047))
+- 🔵 **San Segundo Pooled bound** — San Segundo LP with pooled independent sets (DSATUR + 5 random colorings)
 - 🔴 **Shimizu et al. bound** ([Discrete Optimization 2020](https://doi.org/10.1016/j.disopt.2020.100583))
 - 🟢 **Hosseinian et al. bound** ([IJOC 2020](https://doi.org/10.1287/ijoc.2019.0898))
 - 🟡 **LP bound** (cutting-plane approach with independent set separation)
@@ -48,6 +49,7 @@ The code is associated with the research paper:
 - **Documentation**:
   - [`README.md`](README.md): Main project documentation (this file)
   - [`code_usage.md`](code_usage.md): Compilation and usage instructions
+  - [`branching_test.md`](branching_test.md): Single-branch B&B simulation test documentation
   - [`additional_results.md`](additional_results.md): Supplementary computational results and analysis
   - [`license.md`](license.md): Academic license terms and conditions
 
@@ -59,27 +61,32 @@ For detailed compilation and usage instructions, see [`code_usage.md`](code_usag
 
 **Basic usage:**
 ```bash
-./EWMCP_BOUNDS <instance_path> --bound <SH|SS|HFB|LP> [options]
+./EWMCP_BOUNDS <instance_path> --bound <SH|SS|SSpooled|HFB|LP> [options]
 ```
 
 The edge weights file is derived automatically as `<instance_path>.weights`.
 
-Where `--bound` specifies the bounding approach: `SS` (San Segundo et al.), `SH` (Shimizu et al.), `HFB` (Hosseinian et al.), or `LP` (cutting-plane LP bound).
+Where `--bound` specifies the bounding approach: `SS` (San Segundo et al.), `SSpooled` (San Segundo Pooled), `SH` (Shimizu et al.), `HFB` (Hosseinian et al.), or `LP` (cutting-plane LP bound).
 
 **Available options:**
 | Option | Values | Default | Description |
 |--------|--------|---------|-------------|
-| `--bound` | `SH`, `SS`, `HFB`, `LP` | *(required)* | Bounding approach |
+| `--bound` | `SH`, `SS`, `SSpooled`, `HFB`, `LP` | *(required)* | Bounding approach |
 | `--coloring` | `dsatur`, `random` | `dsatur` | Graph coloring method |
 | `--seed` | integer | `-1` | Random seed (for `random` coloring) |
 | `--time-limit` | seconds | `3600` | Maximum runtime |
 | `--sorting-strategy` | `natural`, `size`, `weight` | `natural` | Stable set sorting for `SH` bound |
 | `--sorting-sense` | `1`, `-1` | `1` | Sort direction: 1=ascending, -1=descending |
+| `--test-branching` | *(flag)* | off | Run single-branch B&B simulation ([details](branching_test.md)) |
+| `--incumbent` | double | — | Incumbent value for pruning (required with `--test-branching`) |
 
 **Examples:**
 ```bash
 # San Segundo bound with DSATUR coloring
 ./EWMCP_BOUNDS ./brock200_1.clq --bound SS --coloring dsatur --time-limit 3600
+
+# San Segundo Pooled bound (DSATUR + 5 random colorings)
+./EWMCP_BOUNDS ./brock200_1.clq --bound SSpooled --time-limit 3600
 
 # Shimizu bound with weight-based sorting (ascending)
 ./EWMCP_BOUNDS ./brock200_1.clq --bound SH --coloring dsatur --sorting-strategy weight --sorting-sense 1

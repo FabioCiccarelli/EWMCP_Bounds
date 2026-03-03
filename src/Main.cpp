@@ -16,6 +16,7 @@ using namespace std;
 #include "ShimizuBound.h"
 #include "HFBBound.h"
 #include "LPBound.h"
+#include "BranchingTest.h"
 
 
 /************************************************************************************************/
@@ -42,9 +43,13 @@ int main(int argc, char** argv)
 	inst.PARAM_SORTING_STRATEGY = "natural";
 	inst.PARAM_SORTING_SENSE = 1;
 
+	bool test_branching = false;
+	double branching_incumbent = 0.0;
+
 	if (argc < 2)
 	{
-		cout << "Usage: ./EWMCP_BOUNDS <instance_path> --bound <SH|SS|HFB> [options]" << endl;
+		cout << "Usage: ./EWMCP_BOUNDS <instance_path> --bound <SH|SS|SSpooled|HFB|LP> [options]" << endl;
+		cout << "       ./EWMCP_BOUNDS <instance_path> --bound <SH|SS|HFB> --test-branching --incumbent <value> [options]" << endl;
 		cout << "Use --help for more information." << endl;
 		exit(1);
 	}
@@ -59,13 +64,15 @@ int main(int argc, char** argv)
 		cout << "./EWMCP_BOUNDS <instance_path> [options]\n\n";
 		cout << "The weights file is derived automatically as <instance_path>.weights\n\n";
 		cout << "Options:\n";
-		cout << "  --bound <SH|SS|HFB|LP>           Bounding approach (required)\n";
+		cout << "  --bound <SH|SS|SSpooled|HFB|LP>  Bounding approach (required)\n";
 		cout << "  --coloring <dsatur|random>        Coloring method (default: dsatur)\n";
 		cout << "  --seed <int>                     Random seed (default: -1, used with random coloring)\n";
 		cout << "  --time-limit <seconds>           Time limit in seconds (default: 3600)\n";
 		cout << "  --sorting-strategy <natural|size|weight>\n";
 		cout << "                                   Stable set sorting strategy for SH bound (default: natural)\n";
 		cout << "  --sorting-sense <1|-1>           Sorting direction: 1=ascending, -1=descending (default: 1)\n";
+		cout << "  --test-branching                 Run single-branch B&B simulation (SH, SS, HFB only)\n";
+		cout << "  --incumbent <double>             Incumbent value for pruning (required with --test-branching)\n";
 		cout << "----------------------------------------------\n";
 		exit(0);
 	}
@@ -104,6 +111,14 @@ int main(int argc, char** argv)
 		{
 			inst.PARAM_SORTING_SENSE = atoi(argv[++i]);
 		}
+		else if (arg == "--test-branching")
+		{
+			test_branching = true;
+		}
+		else if (arg == "--incumbent" && i + 1 < argc)
+		{
+			branching_incumbent = atof(argv[++i]);
+		}
 		else
 		{
 			cout << "ERROR: Unrecognized option or missing value: " << arg << endl;
@@ -118,10 +133,24 @@ int main(int argc, char** argv)
 		exit(2);
 	}
 
-	if (inst.PARAM_APPROACH != "SH" && inst.PARAM_APPROACH != "SS" && inst.PARAM_APPROACH != "HFB" && inst.PARAM_APPROACH != "LP")
+	if (inst.PARAM_APPROACH != "SH" && inst.PARAM_APPROACH != "SS" && inst.PARAM_APPROACH != "SSpooled" && inst.PARAM_APPROACH != "HFB" && inst.PARAM_APPROACH != "LP")
 	{
-		cout << "ERROR: --bound must be SH, SS, HFB, or LP." << endl;
+		cout << "ERROR: --bound must be SH, SS, SSpooled, HFB, or LP." << endl;
 		exit(2);
+	}
+
+	if (test_branching)
+	{
+		if (inst.PARAM_APPROACH != "SH" && inst.PARAM_APPROACH != "SS" && inst.PARAM_APPROACH != "HFB")
+		{
+			cout << "ERROR: --test-branching only supports SH, SS, or HFB bounds." << endl;
+			exit(2);
+		}
+		if (branching_incumbent <= 0.0)
+		{
+			cout << "ERROR: --incumbent is required with --test-branching (must be > 0)." << endl;
+			exit(2);
+		}
 	}
 
 	if (inst.PARAM_COLORING_METHOD != "dsatur" && inst.PARAM_COLORING_METHOD != "random")
@@ -153,6 +182,11 @@ int main(int argc, char** argv)
 	cout << "PARAM_TIME_LIMIT: ->\t" <<  inst.PARAM_TIME_LIMIT << endl;
 	cout << "PARAM_SORTING_STRATEGY: ->\t" <<  inst.PARAM_SORTING_STRATEGY << endl;
 	cout << "PARAM_SORTING_SENSE: ->\t" <<  inst.PARAM_SORTING_SENSE << endl;
+	if (test_branching)
+	{
+		cout << "TEST_BRANCHING: ->\tENABLED" << endl;
+		cout << "INCUMBENT: ->\t" << branching_incumbent << endl;
+	}
 
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -187,25 +221,47 @@ int main(int argc, char** argv)
 	clock_t time_start;
 	clock_t time_end;
 
-	
-	if(inst.PARAM_APPROACH == "SH" || inst.PARAM_APPROACH == "SS" || inst.PARAM_APPROACH == "HFB" || inst.PARAM_APPROACH == "LP")
+	// --- Branching test mode ---
+	if (test_branching)
 	{
-		
-		if(inst.PARAM_COLORING_METHOD == "dsatur")
+		cout << "\n************************************\n";
+		cout << "SINGLE-BRANCH B&B SIMULATION (" << inst.PARAM_APPROACH << ")\n";
+		cout << "************************************\n";
+
+		BranchingTestResult bt_result = run_branching_test(&inst, branching_incumbent);
+		write_branching_results(&inst, bt_result);
+
+		cout << "\n\nDONE!!";
+		cout << "\n************************************\n\n\n";
+
+		delete [] inst.istname_graph;
+		delete [] inst.istname_weights;
+		delete inst.G;
+		return 0;
+	}
+
+	if(inst.PARAM_APPROACH == "SH" || inst.PARAM_APPROACH == "SS" || inst.PARAM_APPROACH == "SSpooled" || inst.PARAM_APPROACH == "HFB" || inst.PARAM_APPROACH == "LP")
+	{
+
+		// SSpooled handles coloring internally (dsatur + 5 random colorings)
+		if(inst.PARAM_APPROACH != "SSpooled")
 		{
-			cout << "\n************************************\n";
-			cout << "DSATUR COLORING\n";
-			dsatur_color(&inst);
+			if(inst.PARAM_COLORING_METHOD == "dsatur")
+			{
+				cout << "\n************************************\n";
+				cout << "DSATUR COLORING\n";
+				dsatur_color(&inst);
+			}
+
+			else if(inst.PARAM_COLORING_METHOD == "random")
+			{
+				cout << "\n************************************\n";
+				cout << "RANDOM COLORING\n";
+				random_color(&inst);
+			}
+
+			cout << "Number of colors: " << inst.num_colors << endl;
 		}
-		
-		else if(inst.PARAM_COLORING_METHOD == "random")
-		{
-			cout << "\n************************************\n";
-			cout << "RANDOM COLORING\n";
-			random_color(&inst);
-		}
-		
-		cout << "Number of colors: " << inst.num_colors << endl;
 
 	#ifdef SHUFFLING_ANALYSIS
 		suffling_analysis(&inst);
@@ -242,18 +298,32 @@ int main(int argc, char** argv)
 			cout << "\n************************************\n";
 			cout << "SAN SEGUNDO BOUND\n\n";
 			SanSegundoBound_ModelBuild(&inst);
-			
+
 			time_start=clock();
-			
+
 			SanSegundoBound_ModelSolve(&inst);
-			
+
 			time_end=clock();
 			inst.SanSegundoBound_Time=(double)(time_end-time_start)/(double)CLOCKS_PER_SEC;
-			
+
 			SanSegundoBound_Free(&inst);
 
 			cout << "SanSegundo Bound time: " << inst.SanSegundoBound_Time << endl;
 
+		}
+		else if(inst.PARAM_APPROACH == "SSpooled")
+		{
+			cout << "\n************************************\n";
+			cout << "SAN SEGUNDO POOLED BOUND\n\n";
+
+			time_start=clock();
+
+			SanSegundoPooled(&inst);
+
+			time_end=clock();
+			inst.SanSegundoBound_Time=(double)(time_end-time_start)/(double)CLOCKS_PER_SEC;
+
+			cout << "SanSegundo Pooled Bound time: " << inst.SanSegundoBound_Time << endl;
 		}
 		else if(inst.PARAM_APPROACH == "HFB")
 		{
@@ -306,7 +376,7 @@ int main(int argc, char** argv)
 	info_SUMMARY
 	<< inst.istname_graph << "\t"
 	<< inst.PARAM_APPROACH << "\t"
-	<< inst.PARAM_COLORING_METHOD << "\t"
+	<< (inst.PARAM_APPROACH == "SSpooled" ? "pooled" : inst.PARAM_COLORING_METHOD) << "\t"
 	<< inst.PARAM_RANDOM_SEED << "\t"
 	<< inst.PARAM_TIME_LIMIT << "\t"
 	<< sorting_strategy_out << "\t"
@@ -315,7 +385,7 @@ int main(int argc, char** argv)
 	<< inst.G->nedges << "\t"
 	<< inst.num_colors << "\t";
 
-	if(inst.PARAM_APPROACH == "SH") 
+	if(inst.PARAM_APPROACH == "SH")
 	{
 		info_SUMMARY
 		<< inst.ShimizuBound << "\t"
@@ -324,7 +394,7 @@ int main(int argc, char** argv)
 		<< inst.ShimizuBound_Time << "\t"
 		<< "\n";
 	}
-	else if(inst.PARAM_APPROACH == "SS") 
+	else if(inst.PARAM_APPROACH == "SS" || inst.PARAM_APPROACH == "SSpooled")
 	{
 		info_SUMMARY
 		<< inst.SanSegundoBound << "\t"
