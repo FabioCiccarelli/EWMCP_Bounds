@@ -432,6 +432,45 @@ BranchingTestResult run_branching_test(instance *inst, double incumbent)
     // W(C) = weight of edges in C
     double W_C = 0.0;
 
+    // best_UB = minimum bound seen so far (ensures monotonic decrease)
+    double best_UB = 1e99;
+
+    // --- Depth-0 snapshot: bound on the full graph before any vertex is fixed ---
+    {
+        int *color_L = nullptr;
+        int num_colors_L = color_subgraph(inst, L, color_L);
+
+        vector<double> gam;
+        compute_gamma(inst, C, L, gam); // C is empty, so gamma = 0 everywhere
+
+        double UB = 0.0;
+        if (inst->PARAM_APPROACH == "SH")
+            UB = bound_SH(inst, C, L, gam, color_L, num_colors_L, W_C);
+        else if (inst->PARAM_APPROACH == "HFB")
+            UB = bound_HFB(inst, C, L, gam, num_colors_L, W_C);
+        else if (inst->PARAM_APPROACH == "SS")
+            UB = bound_SS(inst, C, L, gam, color_L, num_colors_L, W_C);
+
+        delete[] color_L;
+
+        double trivial = bound_trivial(inst, L, gam, W_C);
+        best_UB = UB;
+
+        DepthSnapshot snap;
+        snap.W_C        = W_C;
+        snap.L_size     = (int)L.size();
+        snap.bound      = UB;
+        snap.best_bound = best_UB;
+        snap.trivial    = trivial;
+        result.bound_trace.push_back(snap);
+
+        cout << "  Depth 0  v=-  |C|=0  |L|=" << L.size()
+             << "  W(C)=0  UB=" << UB
+             << "  best=" << best_UB
+             << "  trivial=" << trivial
+             << "  incumbent=" << incumbent << endl;
+    }
+
     bool pruned = false;
 
     while (!L.empty())
@@ -508,12 +547,16 @@ BranchingTestResult run_branching_test(instance *inst, double incumbent)
         delete[] color_L;
 
         double trivial = bound_trivial(inst, L, gam, W_C);
+        
+        // Update best bound (monotonic minimum)
+        if (UB < best_UB) best_UB = UB;
 
         DepthSnapshot snap;
-        snap.W_C    = W_C;
-        snap.L_size = (int)L.size();
-        snap.bound  = UB;
-        snap.trivial = trivial;
+        snap.W_C        = W_C;
+        snap.L_size     = (int)L.size();
+        snap.bound      = UB;
+        snap.best_bound = best_UB;
+        snap.trivial    = trivial;
         result.bound_trace.push_back(snap);
 
         cout << "  Depth " << C.size() << "  v=" << v_chosen
@@ -521,11 +564,12 @@ BranchingTestResult run_branching_test(instance *inst, double incumbent)
              << "  |L|=" << L.size()
              << "  W(C)=" << W_C
              << "  UB=" << UB
+             << "  best=" << best_UB
              << "  trivial=" << trivial
              << "  incumbent=" << incumbent << endl;
 
-        // Check pruning
-        if (UB <= incumbent)
+        // Check pruning using best bound
+        if (best_UB <= incumbent)
         {
             result.depth = (int)C.size();
             result.pruned_by_bound = true;
@@ -548,9 +592,9 @@ BranchingTestResult run_branching_test(instance *inst, double incumbent)
     cout << "Depth: " << result.depth << endl;
     cout << "Pruned by bound: " << (result.pruned_by_bound ? "YES" : "NO (L empty)") << endl;
     cout << "Incumbent: " << result.incumbent << endl;
-    cout << "Bound trace  (W_C | |L| | bound | trivial):" << endl;
+    cout << "Bound trace  (W_C | |L| | bound | best | trivial):" << endl;
     for (const auto &s : result.bound_trace)
-        cout << "  (" << s.W_C << "|" << s.L_size << "|" << s.bound << "|" << s.trivial << ")" << endl;
+        cout << "  (" << s.W_C << "|" << s.L_size << "|" << s.bound << "|" << s.best_bound << "|" << s.trivial << ")" << endl;
     cout << "Time: " << result.total_time << " s" << endl;
     cout << "-----------------------------\n";
 
@@ -563,12 +607,17 @@ BranchingTestResult run_branching_test(instance *inst, double incumbent)
 
 void write_branching_results(instance *inst, const BranchingTestResult &result)
 {
-    ofstream out("branching_results.txt", ios::app);
+    string fname = string("branching_results_") + inst->PARAM_APPROACH + ".txt";
+    ofstream out(fname, ios::app);
+    if (!out.is_open()) {
+        cerr << "Unable to open output file: " << fname << endl;
+        return;
+    }
 
     // Format per line:
     // instance \t approach \t coloring \t seed \t nnodes \t nedges \t
     // depth \t pruned_flag \t incumbent \t time \t
-    // [W_C \t |L| \t bound \t trivial] for each depth (4 cols per depth)
+    // [W_C \t |L| \t bound \t best_bound \t trivial] for each depth (5 cols per depth)
 
     out << inst->istname_graph << "\t"
         << inst->PARAM_APPROACH << "\t"
@@ -585,7 +634,7 @@ void write_branching_results(instance *inst, const BranchingTestResult &result)
     {
         const auto &s = result.bound_trace[i];
         if (i > 0) out << "\t";
-        out << s.W_C << "|" << s.L_size << "|" << s.bound << "|" << s.trivial;
+        out << s.W_C << "|" << s.L_size << "|" << s.bound << "|" << s.best_bound << "|" << s.trivial;
     }
 
     out << "\n";

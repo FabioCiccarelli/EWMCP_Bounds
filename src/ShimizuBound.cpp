@@ -58,12 +58,21 @@ static void reorder_stable_sets(instance *inst, const string &strategy, int sens
 				gamma[i] += weights[j];
 		}
 
-		// For each stable set, compute the sum of gamma values of its vertices
+		// For each stable set, compute the average gamma (sum / size)
 		vector<double> ss_weight(k, 0.0);
+		vector<int> ss_size(k, 0);
 		for (int i = 0; i < inst->G->nnodes; i++)
+		{
 			ss_weight[inst->v_color[i]] += gamma[i];
+			ss_size[inst->v_color[i]]++;
+		}
+		for (int h = 0; h < k; h++)
+		{
+			if (ss_size[h] > 0)
+				ss_weight[h] /= ss_size[h];
+		}
 
-		// Sort stable set indices by weight
+		// Sort stable set indices by average weight
 		vector<int> order(k);
 		for (int h = 0; h < k; h++) order[h] = h;
 

@@ -24,10 +24,11 @@ using namespace std;
  * @brief Per-depth snapshot recorded during the single-branch simulation.
  */
 struct DepthSnapshot {
-    double W_C;      ///< Weight of the current clique C
-    int    L_size;   ///< Number of candidates |L|
-    double bound;    ///< Main upper bound value (SH / HFB / SS)
-    double trivial;  ///< Trivial upper bound: W(C) + Σ gamma(v) + Σ w(e) for e in E[L]
+    double W_C;         ///< Weight of the current clique C
+    int    L_size;      ///< Number of candidates |L|
+    double bound;       ///< Main upper bound value (SH / HFB / SS)
+    double best_bound;  ///< Minimum bound seen up to this depth (monotonic)
+    double trivial;     ///< Trivial upper bound: W(C) + Σ gamma(v) + Σ w(e) for e in E[L]
 };
 
 /**

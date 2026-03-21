@@ -73,14 +73,26 @@ Results are appended to **`branching_results.txt`** (one line per run). The colu
 | Stop reason | `PRUNED_BY_BOUND` or `CANDIDATES_EMPTY` |
 | Incumbent | The incumbent value provided by the user |
 | Time | Total computation time (seconds) |
-| Per-depth snapshots | One tab-separated token per depth, each formatted as `W_C\|\|L\||bound` |
+| Per-depth snapshots | One tab-separated token per depth, each formatted as `W_C\|L\|bound\|best_bound\|trivial` |
 
-The per-depth tokens encode the state at that depth: `W_C` is the weight of the current clique, `|L|` is the number of remaining candidates, and `bound` is the upper bound value `UB(C, L)`.
+The per-depth tokens encode the state at that depth:
+- `W_C` is the weight of the current clique C
+- `|L|` is the number of remaining candidates
+- `bound` is the **total** upper bound value `UB(C, L) = W(C) + UB_L` computed at that depth
+- `best_bound` is the minimum **total** bound seen up to that depth (monotonically decreasing)
+- `trivial` is a **total** trivial upper bound = W(C) + sum_gamma + sum_internal
+
+**Important:** `bound`, `best_bound`, and `trivial` all include `W_C` — they are total bounds, not just the `G[L]` contribution. The pruning check uses `best_bound` to ensure monotonic pruning behavior.
 
 **Example** (3 depths, tab-separated after the fixed columns):
 ```
-... \t 0|155|137157 \t 36|126|110936 \t 247|98|76999
+... \t 0|155|137157|137157|500000 \t 36|126|110936|110936|450000 \t 247|98|110000|110000|400000
 ```
+
+In this example:
+- At depth 0: W(C)=0, |L|=155, total bound=137157
+- At depth 1: W(C)=36, |L|=126, total bound=110936 (decreased)
+- At depth 2: W(C)=247, |L|=98, raw bound=110000 (slight decrease), best_bound stays at 110000
 
 ### Console output
 
@@ -90,13 +102,19 @@ During execution, each depth is printed on a single line including the index of 
 
 - **Depth**: The number of vertices in the clique `C` when the simulation stopped. Lower depth with `PRUNED_BY_BOUND` indicates a stronger bound.
 - **Stop reason**: `PRUNED_BY_BOUND` means the bound was tight enough to prune; `CANDIDATES_EMPTY` means the random branch reached a maximal clique without pruning.
-- **Trace**: The evolution of `(W_C, |L|, bound)` as vertices are added to `C`. A quickly decreasing bound sequence indicates the bound tightens effectively with depth.
+- **Trace**: The evolution of `(W_C, |L|, bound, best_bound)` as vertices are added to `C`. The `best_bound` sequence is monotonically non-increasing by construction. A quickly decreasing `best_bound` indicates the bound tightens effectively with depth.
 
 ## Implementation details
 
 ### Coloring at each depth
 
 At each step, the subgraph `G[L]` is re-colored from scratch using either DSATUR or random greedy coloring. While incremental coloring updates would be more efficient, they would compromise coloring quality. For the sake of this analysis, the re-coloring cost is acceptable.
+
+### Why bounds can increase with depth
+
+Because `G[L]` is **recolored from scratch** at each depth, the coloring-based bounds (SH, HFB) can produce a different partition into independent sets even as `|L|` decreases. Combined with the fact that `W(C)` increases as vertices are added to the clique, the total bound `UB(C,L) = W(C) + UB_L` can occasionally **increase** from one depth to the next.
+
+This is **not a bug** — both bounds are valid upper bounds. However, for monotonic pruning behavior, we track `best_bound = min(UB)` across all depths and use this value for the pruning check. The raw `bound` value is still recorded for analysis purposes.
 
 ### Gamma computation
 
