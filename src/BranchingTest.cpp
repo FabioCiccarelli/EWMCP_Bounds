@@ -81,6 +81,97 @@ static int color_subgraph(instance *inst, const vector<int> &vertices, int *&col
 }
 
 /**
+ * @brief Reorder color classes in color_L according to the sorting strategy.
+ *
+ * Mirrors the logic of reorder_stable_sets() in ShimizuBound.cpp, but operates
+ * on the local color_L array restricted to vertices in L.
+ */
+static void reorder_color_classes_L(instance *inst,
+                                     const vector<int> &L,
+                                     int *color_L,
+                                     int num_colors_L)
+{
+    const string &strategy = inst->PARAM_SORTING_STRATEGY;
+    int sense = inst->PARAM_SORTING_SENSE;
+    int n = inst->G->nnodes;
+    int k = num_colors_L;
+
+    if (strategy == "size")
+    {
+        vector<int> ss_size(k, 0);
+        for (int v : L) ss_size[color_L[v]]++;
+
+        vector<int> order(k);
+        for (int h = 0; h < k; h++) order[h] = h;
+        sort(order.begin(), order.end(), [&](int a, int b) {
+            return (sense > 0) ? (ss_size[a] < ss_size[b])
+                               : (ss_size[a] > ss_size[b]);
+        });
+
+        vector<int> new_color(k);
+        for (int new_h = 0; new_h < k; new_h++)
+            new_color[order[new_h]] = new_h;
+
+        for (int v : L)
+            color_L[v] = new_color[color_L[v]];
+    }
+    else if (strategy == "weight")
+    {
+        vector<bool> in_L(n, false);
+        for (int v : L) in_L[v] = true;
+
+        // gamma(v) = sum of (k-1) heaviest edge weights incident on v within G[L]
+        vector<double> gamma_w(n, 0.0);
+        for (int v : L)
+        {
+            vector<double> weights;
+            for (int j = 0; j < inst->G->node_degree[v]; j++)
+            {
+                int u = inst->G->adj_lists[v][j];
+                if (in_L[u])
+                {
+                    int e = inst->G->adj_edge_idx[v][j];
+                    weights.push_back(inst->G->edge_weights[e]);
+                }
+            }
+            sort(weights.begin(), weights.end(), greater<double>());
+            int top = min((int)weights.size(), k - 1);
+            for (int j = 0; j < top; j++)
+                gamma_w[v] += weights[j];
+        }
+
+        // Average gamma per stable set
+        vector<double> ss_weight(k, 0.0);
+        vector<int> ss_size(k, 0);
+        for (int v : L)
+        {
+            ss_weight[color_L[v]] += gamma_w[v];
+            ss_size[color_L[v]]++;
+        }
+        for (int h = 0; h < k; h++)
+        {
+            if (ss_size[h] > 0)
+                ss_weight[h] /= ss_size[h];
+        }
+
+        vector<int> order(k);
+        for (int h = 0; h < k; h++) order[h] = h;
+        sort(order.begin(), order.end(), [&](int a, int b) {
+            return (sense > 0) ? (ss_weight[a] < ss_weight[b])
+                               : (ss_weight[a] > ss_weight[b]);
+        });
+
+        vector<int> new_color(k);
+        for (int new_h = 0; new_h < k; new_h++)
+            new_color[order[new_h]] = new_h;
+
+        for (int v : L)
+            color_L[v] = new_color[color_L[v]];
+    }
+    // else: "natural" — keep the original ordering
+}
+
+/**
  * @brief Compute gamma(v) = sum of w(u,v) for u in C, for every v in L.
  */
 static void compute_gamma(instance *inst,
@@ -440,6 +531,10 @@ BranchingTestResult run_branching_test(instance *inst, double incumbent)
         int *color_L = nullptr;
         int num_colors_L = color_subgraph(inst, L, color_L);
 
+        // Reorder color classes for SH if a non-natural strategy is requested
+        if (inst->PARAM_APPROACH == "SH" && inst->PARAM_SORTING_STRATEGY != "natural")
+            reorder_color_classes_L(inst, L, color_L, num_colors_L);
+
         vector<double> gam;
         compute_gamma(inst, C, L, gam); // C is empty, so gamma = 0 everywhere
 
@@ -514,7 +609,21 @@ BranchingTestResult run_branching_test(instance *inst, double incumbent)
         // If L is empty, we finished the branch (no more candidates)
         if (L.empty())
         {
-            // Record final depth, no bound to compute
+            DepthSnapshot snap;
+            snap.W_C        = W_C;
+            snap.L_size     = 0;
+            snap.bound      = W_C;
+            snap.best_bound = min(best_UB, W_C);
+            snap.trivial    = W_C;
+            result.bound_trace.push_back(snap);
+
+            cout << "  Depth " << C.size() << "  v=" << v_chosen
+                 << "  |C|=" << C.size()
+                 << "  |L|=0"
+                 << "  W(C)=" << W_C
+                 << "  (CANDIDATES_EMPTY)"
+                 << "  incumbent=" << incumbent << endl;
+
             result.depth = (int)C.size();
             result.pruned_by_bound = false;
             break;
@@ -524,6 +633,10 @@ BranchingTestResult run_branching_test(instance *inst, double incumbent)
         // 1. Color G[L]
         int *color_L = nullptr;
         int num_colors_L = color_subgraph(inst, L, color_L);
+
+        // Reorder color classes for SH if a non-natural strategy is requested
+        if (inst->PARAM_APPROACH == "SH" && inst->PARAM_SORTING_STRATEGY != "natural")
+            reorder_color_classes_L(inst, L, color_L, num_colors_L);
 
         // 2. Compute gamma
         vector<double> gam;

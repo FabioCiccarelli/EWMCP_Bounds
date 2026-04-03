@@ -44,7 +44,8 @@ This module implements a **single-branch Branch-and-Bound simulation** to evalua
 | `--coloring <dsatur\|random>` | Coloring method used on `G[L]` at each depth | `dsatur` |
 | `--seed <int>` | Random seed for both vertex selection and coloring | `-1` |
 | `--time-limit <seconds>` | Time limit for LP solves (SS bound) | `3600` |
-| `--sorting-strategy` | Not applicable in branching test mode | — |
+| `--sorting-strategy <natural\|size\|weight>` | Stable set sorting strategy (SH only, see [code_usage.md](code_usage.md)) | `natural` |
+| `--sorting-sense <1\|-1>` | Sorting direction: 1=ascending, -1=descending (SH only) | `1` |
 
 ### Examples
 

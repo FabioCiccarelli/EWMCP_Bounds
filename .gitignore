@@ -8,6 +8,7 @@ bin/
 obj/
 tests/
 data/DIMACS/
+data/RANDOM/
 results.txt
 
 

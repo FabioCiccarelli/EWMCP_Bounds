@@ -1,5 +1,5 @@
-#ifndef LPBOUND_HEADER
-#define LPBOUND_HEADER
+#ifndef CGBOUND_HEADER
+#define CGBOUND_HEADER
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -19,7 +19,7 @@
 using namespace std;
 
 /***************************************************************************/
-void LPBound_Solve(instance *inst);
+void CGBound_Solve(instance *inst);
 /***************************************************************************/
 
 #endif

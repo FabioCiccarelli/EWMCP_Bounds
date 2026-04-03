@@ -15,7 +15,8 @@ using namespace std;
 #include "SanSegundoBound.h"
 #include "ShimizuBound.h"
 #include "HFBBound.h"
-#include "LPBound.h"
+#include "CGBound.h"
+#include "F11Bound.h"
 #include "BranchingTest.h"
 
 
@@ -48,7 +49,7 @@ int main(int argc, char** argv)
 
 	if (argc < 2)
 	{
-		cout << "Usage: ./EWMCP_BOUNDS <instance_path> --bound <SH|SS|SSpooled|HFB|LP> [options]" << endl;
+		cout << "Usage: ./EWMCP_BOUNDS <instance_path> --bound <SH|SS|SSpooled|HFB|CG|F1|F11> [options]" << endl;
 		cout << "       ./EWMCP_BOUNDS <instance_path> --bound <SH|SS|HFB> --test-branching --incumbent <value> [options]" << endl;
 		cout << "Use --help for more information." << endl;
 		exit(1);
@@ -64,13 +65,14 @@ int main(int argc, char** argv)
 		cout << "./EWMCP_BOUNDS <instance_path> [options]\n\n";
 		cout << "The weights file is derived automatically as <instance_path>.weights\n\n";
 		cout << "Options:\n";
-		cout << "  --bound <SH|SS|SSpooled|HFB|LP>  Bounding approach (required)\n";
+		cout << "  --bound <SH|SS|SSpooled|HFB|CG|F1|F11>  Bounding approach (required)\n";
 		cout << "  --coloring <dsatur|random>        Coloring method (default: dsatur)\n";
 		cout << "  --seed <int>                     Random seed (default: -1, used with random coloring)\n";
 		cout << "  --time-limit <seconds>           Time limit in seconds (default: 3600)\n";
 		cout << "  --sorting-strategy <natural|size|weight>\n";
 		cout << "                                   Stable set sorting strategy for SH bound (default: natural)\n";
 		cout << "  --sorting-sense <1|-1>           Sorting direction: 1=ascending, -1=descending (default: 1)\n";
+		cout << "  --disable-valid-ineq             Disable valid inequalities (4)+(5) in F11 formulation (uses F1 label)\n";
 		cout << "  --test-branching                 Run single-branch B&B simulation (SH, SS, HFB only)\n";
 		cout << "  --incumbent <double>             Incumbent value for pruning (required with --test-branching)\n";
 		cout << "----------------------------------------------\n";
@@ -111,6 +113,10 @@ int main(int argc, char** argv)
 		{
 			inst.PARAM_SORTING_SENSE = atoi(argv[++i]);
 		}
+		else if (arg == "--disable-valid-ineq")
+		{
+			inst.PARAM_DISABLE_VALID_INEQ = true;
+		}
 		else if (arg == "--test-branching")
 		{
 			test_branching = true;
@@ -133,10 +139,17 @@ int main(int argc, char** argv)
 		exit(2);
 	}
 
-	if (inst.PARAM_APPROACH != "SH" && inst.PARAM_APPROACH != "SS" && inst.PARAM_APPROACH != "SSpooled" && inst.PARAM_APPROACH != "HFB" && inst.PARAM_APPROACH != "LP")
+	if (inst.PARAM_APPROACH != "SH" && inst.PARAM_APPROACH != "SS" && inst.PARAM_APPROACH != "SSpooled" && inst.PARAM_APPROACH != "HFB" && inst.PARAM_APPROACH != "CG" && inst.PARAM_APPROACH != "F1" && inst.PARAM_APPROACH != "F11")
 	{
-		cout << "ERROR: --bound must be SH, SS, SSpooled, HFB, or LP." << endl;
+		cout << "ERROR: --bound must be SH, SS, SSpooled, HFB, CG, F1, or F11." << endl;
 		exit(2);
+	}
+
+	// F1 is syntactic sugar: run F11 solver with valid inequalities disabled
+	if (inst.PARAM_APPROACH == "F1")
+	{
+		inst.PARAM_APPROACH = "F11";
+		inst.PARAM_DISABLE_VALID_INEQ = true;
 	}
 
 	if (test_branching)
@@ -240,8 +253,7 @@ int main(int argc, char** argv)
 		return 0;
 	}
 
-	if(inst.PARAM_APPROACH == "SH" || inst.PARAM_APPROACH == "SS" || inst.PARAM_APPROACH == "SSpooled" || inst.PARAM_APPROACH == "HFB" || inst.PARAM_APPROACH == "LP")
-	{
+	if(inst.PARAM_APPROACH == "SH" || inst.PARAM_APPROACH == "SS" || inst.PARAM_APPROACH == "SSpooled" || inst.PARAM_APPROACH == "HFB" || inst.PARAM_APPROACH == "CG" || inst.PARAM_APPROACH == "F11")	{
 
 		// SSpooled handles coloring internally (dsatur + 5 random colorings)
 		if(inst.PARAM_APPROACH != "SSpooled")
@@ -338,18 +350,45 @@ int main(int argc, char** argv)
 
 			cout << "HFB Bound time: " << inst.HFBBound_Time << endl;
 		}
-		else if(inst.PARAM_APPROACH == "LP")
+		else if(inst.PARAM_APPROACH == "CG")
 		{
 			cout << "\n************************************\n";
-			cout << "LP BOUND\n";
+			cout << "CG BOUND\n";
 			time_start=clock();
 
-			LPBound_Solve(&inst);
+			CGBound_Solve(&inst);
 
 			time_end=clock();
-			inst.LPBound_Time=(double)(time_end-time_start)/(double)CLOCKS_PER_SEC;
+			inst.CGBound_Time=(double)(time_end-time_start)/(double)CLOCKS_PER_SEC;
 
-			cout << "LP Bound time: " << inst.LPBound_Time << endl;
+			cout << "CG Bound time: " << inst.CGBound_Time << endl;
+		}
+		else if(inst.PARAM_APPROACH == "F11")
+		{
+			cout << "\n************************************\n";
+			if(!inst.PARAM_DISABLE_VALID_INEQ) 
+			{
+			cout << "F11 BOUND\n";
+			}
+			else
+			{
+			cout << "F1 BOUND\n";
+			}
+			time_start=clock();
+
+			F11Bound_Solve(&inst);
+
+			time_end=clock();
+			inst.F11Bound_Time=(double)(time_end-time_start)/(double)CLOCKS_PER_SEC;
+
+			if(!inst.PARAM_DISABLE_VALID_INEQ) 
+			{
+			cout << "F11 Bound time: " << inst.F11Bound_Time << endl;
+			}
+			else
+			{
+			cout << "F1 Bound time: " << inst.F11Bound_Time << endl;
+			}
 		}
 		
 		cout << "\n\nDONE!!";
@@ -369,13 +408,17 @@ int main(int argc, char** argv)
 	// Columns: instance | approach | coloring | seed | time_limit | sorting_strategy | sorting_sense |
 	//          nnodes | nedges | num_colors | bound_value | bound_value_2 | status | time
 
+	string approach_label = inst.PARAM_APPROACH;
+	if (inst.PARAM_APPROACH == "F11" && inst.PARAM_DISABLE_VALID_INEQ)
+		approach_label = "F1";
+
 	string sorting_strategy_out = (inst.PARAM_APPROACH == "SH") ? inst.PARAM_SORTING_STRATEGY : "none";
 	string sorting_sense_out = (inst.PARAM_APPROACH == "SH" && inst.PARAM_SORTING_STRATEGY != "natural")
 	                           ? to_string(inst.PARAM_SORTING_SENSE) : "none";
 
 	info_SUMMARY
 	<< inst.istname_graph << "\t"
-	<< inst.PARAM_APPROACH << "\t"
+	<< approach_label << "\t"
 	<< (inst.PARAM_APPROACH == "SSpooled" ? "pooled" : inst.PARAM_COLORING_METHOD) << "\t"
 	<< inst.PARAM_RANDOM_SEED << "\t"
 	<< inst.PARAM_TIME_LIMIT << "\t"
@@ -412,13 +455,22 @@ int main(int argc, char** argv)
 		<< inst.HFBBound_Time << "\t"
 		<< "\n";
 	}
-	else if(inst.PARAM_APPROACH == "LP") 
+	else if(inst.PARAM_APPROACH == "CG") 
 	{
 		info_SUMMARY
-		<< inst.LPBound << "\t"
-		<< inst.LPBound_num_cuts << "\t"
-		<< (inst.LPBound_TimeLimitHit ? "TimeLimit" : "Optimal") << "\t"
-		<< inst.LPBound_Time << "\t"
+		<< inst.CGBound << "\t"
+		<< inst.CGBound_num_cuts << "\t"
+		<< (inst.CGBound_TimeLimitHit ? "TimeLimit" : "Optimal") << "\t"
+		<< inst.CGBound_Time << "\t"
+		<< "\n";
+	}
+	else if(inst.PARAM_APPROACH == "F11") 
+	{
+		info_SUMMARY
+		<< inst.F11Bound << "\t"
+		<< "none" << "\t"
+		<< (inst.F11Bound_TimeLimitHit ? "TimeLimit" : "Optimal") << "\t"
+		<< inst.F11Bound_Time << "\t"
 		<< "\n";
 	}
 	

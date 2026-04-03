@@ -18,7 +18,8 @@ OBJS = \
 	$(OBJDIR)/SanSegundoBound.o \
 	$(OBJDIR)/ShimizuBound.o \
 	$(OBJDIR)/HFBBound.o \
-	$(OBJDIR)/LPBound.o \
+	$(OBJDIR)/CGBound.o \
+	$(OBJDIR)/F11Bound.o \
 	$(OBJDIR)/TSM-mod.o \
 	$(OBJDIR)/BranchingTest.o
 

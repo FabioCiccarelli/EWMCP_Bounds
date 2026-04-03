@@ -20,7 +20,9 @@ This repository contains the C++ implementation of three state-of-the-art upper 
 - 🔵 **San Segundo Pooled bound** — San Segundo LP with pooled independent sets (DSATUR + 5 random colorings)
 - 🔴 **Shimizu et al. bound** ([Discrete Optimization 2020](https://doi.org/10.1016/j.disopt.2020.100583))
 - 🟢 **Hosseinian et al. bound** ([IJOC 2020](https://doi.org/10.1287/ijoc.2019.0898))
-- 🟡 **LP bound** (cutting-plane approach with independent set separation)
+- 🟡 **CG bound** (column generation with independent set separation)
+- 🟠 **F11 bound** — compact LP formulation ([Gouveia & Martins, 2015](https://doi.org/10.1007/s13675-014-0028-1))
+- 🟠 **F1 bound** — compact LP formulation without valid inequalities ([Gouveia & Martins, 2015](https://doi.org/10.1007/s13675-014-0028-1))
 
 ## 📝 Associated Research
 
@@ -61,22 +63,23 @@ For detailed compilation and usage instructions, see [`code_usage.md`](code_usag
 
 **Basic usage:**
 ```bash
-./EWMCP_BOUNDS <instance_path> --bound <SH|SS|SSpooled|HFB|LP> [options]
+./EWMCP_BOUNDS <instance_path> --bound <SH|SS|SSpooled|HFB|CG|F1|F11> [options]
 ```
 
 The edge weights file is derived automatically as `<instance_path>.weights`.
 
-Where `--bound` specifies the bounding approach: `SS` (San Segundo et al.), `SSpooled` (San Segundo Pooled), `SH` (Shimizu et al.), `HFB` (Hosseinian et al.), or `LP` (cutting-plane LP bound).
+Where `--bound` specifies the bounding approach: `SS` (San Segundo et al.), `SSpooled` (San Segundo Pooled), `SH` (Shimizu et al.), `HFB` (Hosseinian et al.), `CG` (column generation LP bound), `F1` (base compact LP formulation), or `F11` (compact LP formulation with valid inequalities).
 
 **Available options:**
 | Option | Values | Default | Description |
 |--------|--------|---------|-------------|
-| `--bound` | `SH`, `SS`, `SSpooled`, `HFB`, `LP` | *(required)* | Bounding approach |
+| `--bound` | `SH`, `SS`, `SSpooled`, `HFB`, `CG`, `F1`, `F11` | *(required)* | Bounding approach |
 | `--coloring` | `dsatur`, `random` | `dsatur` | Graph coloring method |
 | `--seed` | integer | `-1` | Random seed (for `random` coloring) |
 | `--time-limit` | seconds | `3600` | Maximum runtime |
 | `--sorting-strategy` | `natural`, `size`, `weight` | `natural` | Stable set sorting for `SH` bound |
 | `--sorting-sense` | `1`, `-1` | `1` | Sort direction: 1=ascending, -1=descending |
+| `--disable-valid-ineq` | *(flag)* | off | Disable valid inequalities (4)+(5) in F11 (equivalent to `--bound F1`) |
 | `--test-branching` | *(flag)* | off | Run single-branch B&B simulation ([details](branching_test.md)) |
 | `--incumbent` | double | — | Incumbent value for pruning (required with `--test-branching`) |
 
@@ -94,8 +97,14 @@ Where `--bound` specifies the bounding approach: `SS` (San Segundo et al.), `SSp
 # Shimizu bound with size-based sorting (descending)
 ./EWMCP_BOUNDS ./brock200_1.clq --bound SH --coloring random --seed 42 --sorting-strategy size --sorting-sense -1
 
-# LP bound with cutting planes
-./EWMCP_BOUNDS ./brock200_1.clq --bound LP --coloring dsatur --time-limit 3600
+# CG bound with column generation
+./EWMCP_BOUNDS ./brock200_1.clq --bound CG --coloring dsatur --time-limit 3600
+
+# F11 compact LP bound
+./EWMCP_BOUNDS ./brock200_1.clq --bound F11 --coloring dsatur --time-limit 3600
+
+# F1 compact LP bound (F11 without valid inequalities)
+./EWMCP_BOUNDS ./brock200_1.clq --bound F1 --coloring dsatur --time-limit 3600
 ```
 
 ## 📊 Results

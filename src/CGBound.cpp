@@ -1,9 +1,9 @@
-#include "LPBound.h"
+#include "CGBound.h"
 #include "TSM-mod.h"
 #include <chrono>
 
 ///////////////////////////////////////////////////////////////////////////////
-#define DISABLE_CPLEX_OUTPUT_LP
+#define DISABLE_CPLEX_OUTPUT_CG
 // #define VERIFY_MWIS_WITH_CPLEX  // Compare TSM vs CPLEX MWIS to verify optimality
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -115,7 +115,7 @@ static bool is_independent_set(Graph *G, const vector<int> &vertices)
 
 
 /***************************************************************************/
-void LPBound_Solve(instance *inst)
+void CGBound_Solve(instance *inst)
 /***************************************************************************/
 {
  try {
@@ -221,7 +221,7 @@ void LPBound_Solve(instance *inst)
 
 	IloCplex cplex(model);
 
-#ifdef DISABLE_CPLEX_OUTPUT_LP
+#ifdef DISABLE_CPLEX_OUTPUT_CG
 	cplex.setOut(env.getNullStream());
 #endif
 
@@ -249,7 +249,7 @@ void LPBound_Solve(instance *inst)
 		double remaining = inst->PARAM_TIME_LIMIT - elapsed;
 		if (remaining <= 0.0)
 		{
-			cout << "LP Bound: time limit reached before LP solve (iter "
+			cout << "CG Bound: time limit reached before LP solve (iter "
 			     << iter << ")." << endl;
 			time_limit_hit = true;
 			break;
@@ -296,7 +296,7 @@ void LPBound_Solve(instance *inst)
 			chrono::steady_clock::now() - wall_start).count();
 		if (elapsed >= inst->PARAM_TIME_LIMIT)
 		{
-			cout << "LP Bound: time limit reached before separation (iter "
+			cout << "CG Bound: time limit reached before separation (iter "
 			     << iter << ")." << endl;
 			time_limit_hit = true;
 			break;
@@ -309,7 +309,7 @@ void LPBound_Solve(instance *inst)
 
 		if(iter == 0)
 		{
-			cout << "LP Bound: initial dual obj = " << dual_obj << "\n\n";
+			cout << "CG Bound: initial dual obj = " << dual_obj << "\n\n";
 		}
 
 		// Scale x* to integer weights for TSM
@@ -353,7 +353,7 @@ void LPBound_Solve(instance *inst)
 		// We cannot trust the separation result, so stop.
 		if (TSM_TIME_LIMIT_HIT)
 		{
-			cout << "LP Bound: TSM time limit reached during separation (iter "
+			cout << "CG Bound: TSM time limit reached during separation (iter "
 			     << iter << ")." << endl;
 			time_limit_hit = true;
 			break;
@@ -431,7 +431,7 @@ void LPBound_Solve(instance *inst)
 			chrono::steady_clock::now() - wall_start).count();
 		if (elapsed >= inst->PARAM_TIME_LIMIT)
 		{
-			cout << "LP Bound: time limit reached after separation (iter "
+			cout << "CG Bound: time limit reached after separation (iter "
 			     << iter << ")." << endl;
 			time_limit_hit = true;
 			break;
@@ -441,9 +441,9 @@ void LPBound_Solve(instance *inst)
 		if (exact_weight <= 1.0 + 1e-6)
 		{
 			// No violated IS ⇒ dual is optimal ⇒ LP bound converged
-			cout << "LP Bound converged after " << iter + 1
+			cout << "CG Bound converged after " << iter + 1
 			     << " iterations (" << num_cuts << " cols added)." << endl;
-			cout << "LP Bound value: " << dual_obj << endl;
+			cout << "CG Bound value: " << dual_obj << endl;
 			break;
 		}
 
@@ -472,12 +472,12 @@ void LPBound_Solve(instance *inst)
 
 	// Store final result
 	try {
-		inst->LPBound = floor(cplex.getObjValue());
+		inst->CGBound = floor(cplex.getObjValue());
 	} catch (...) {
-		inst->LPBound = -1.0;
+		inst->CGBound = -1.0;
 	}
-	inst->LPBound_num_cuts = num_cuts;
-	inst->LPBound_TimeLimitHit = time_limit_hit;
+	inst->CGBound_num_cuts = num_cuts;
+	inst->CGBound_TimeLimitHit = time_limit_hit;
 
 	// Cleanup
 	cplex.end();
@@ -491,9 +491,9 @@ void LPBound_Solve(instance *inst)
 	inst->MWCP_X = nullptr;
 
  } catch (IloException &e) {
-	cerr << "CPLEX Exception in LPBound_Solve: " << e.getMessage() << endl;
-	inst->LPBound = -1.0;
-	inst->LPBound_num_cuts = 0;
-	inst->LPBound_TimeLimitHit = true;
+	cerr << "CPLEX Exception in CGBound_Solve: " << e.getMessage() << endl;
+	inst->CGBound = -1.0;
+	inst->CGBound_num_cuts = 0;
+	inst->CGBound_TimeLimitHit = true;
  }
 }
