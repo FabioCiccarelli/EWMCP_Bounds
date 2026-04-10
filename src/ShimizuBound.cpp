@@ -20,9 +20,18 @@ static void reorder_stable_sets(instance *inst, const string &strategy, int sens
 		for (int h = 0; h < k; h++) order[h] = h;
 
 		sort(order.begin(), order.end(), [&](int a, int b) {
-			return (sense > 0) ? (ss_size[a] < ss_size[b])
-			                   : (ss_size[a] > ss_size[b]);
+			if (ss_size[a] != ss_size[b])
+			{
+				return ss_size[a] < ss_size[b];
+			}
+
+			return a < b;
 		});
+
+		if (sense < 0)
+		{
+			reverse(order.begin(), order.end());
+		}
 
 		// Build mapping old_color -> new_color
 		vector<int> new_color(k);
@@ -77,9 +86,23 @@ static void reorder_stable_sets(instance *inst, const string &strategy, int sens
 		for (int h = 0; h < k; h++) order[h] = h;
 
 		sort(order.begin(), order.end(), [&](int a, int b) {
-			return (sense > 0) ? (ss_weight[a] < ss_weight[b])
-			                   : (ss_weight[a] > ss_weight[b]);
+			if (ss_weight[a] < ss_weight[b])
+			{
+				return true;
+			}
+
+			if (ss_weight[a] > ss_weight[b])
+			{
+				return false;
+			}
+
+			return a < b;
 		});
+
+		if (sense < 0)
+		{
+			reverse(order.begin(), order.end());
+		}
 
 		// Build mapping old_color -> new_color
 		vector<int> new_color(k);
@@ -138,9 +161,9 @@ void ShimizuBound(instance *inst)
 		
 		if (h_u < h_v)
 		{
-			if (inst->G->edge_weights[e] > MIW[u][h_v])
+			if (inst->G->edge_weights[e] > MIW[v][h_u])
 			{
-				MIW[u][h_v] = inst->G->edge_weights[e];
+				MIW[v][h_u] = inst->G->edge_weights[e];
 			}
 
 			continue;
@@ -148,9 +171,9 @@ void ShimizuBound(instance *inst)
 
 		else if (h_u > h_v)
 		{
-			if (inst->G->edge_weights[e] > MIW[v][h_u])
+			if (inst->G->edge_weights[e] > MIW[u][h_v])
 			{
-				MIW[v][h_u] = inst->G->edge_weights[e];
+				MIW[u][h_v] = inst->G->edge_weights[e];
 			}
 
 			continue;
@@ -166,7 +189,7 @@ void ShimizuBound(instance *inst)
 
 	for (int i = 0; i < inst->G->nnodes; i++)
 	{
-		for (int h = inst->v_color[i]; h < inst->num_colors; h++)
+		for (int h = 0; h < inst->v_color[i]; h++)
 		{
 			inst->Shimizu_w[i] += MIW[i][h];
 		}

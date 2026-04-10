@@ -104,9 +104,14 @@ static void reorder_color_classes_L(instance *inst,
         vector<int> order(k);
         for (int h = 0; h < k; h++) order[h] = h;
         sort(order.begin(), order.end(), [&](int a, int b) {
-            return (sense > 0) ? (ss_size[a] < ss_size[b])
-                               : (ss_size[a] > ss_size[b]);
+            if (ss_size[a] != ss_size[b])
+                return ss_size[a] < ss_size[b];
+
+            return a < b;
         });
+
+        if (sense < 0)
+            reverse(order.begin(), order.end());
 
         vector<int> new_color(k);
         for (int new_h = 0; new_h < k; new_h++)
@@ -157,9 +162,17 @@ static void reorder_color_classes_L(instance *inst,
         vector<int> order(k);
         for (int h = 0; h < k; h++) order[h] = h;
         sort(order.begin(), order.end(), [&](int a, int b) {
-            return (sense > 0) ? (ss_weight[a] < ss_weight[b])
-                               : (ss_weight[a] > ss_weight[b]);
+            if (ss_weight[a] < ss_weight[b])
+                return true;
+
+            if (ss_weight[a] > ss_weight[b])
+                return false;
+
+            return a < b;
         });
+
+        if (sense < 0)
+            reverse(order.begin(), order.end());
 
         vector<int> new_color(k);
         for (int new_h = 0; new_h < k; new_h++)
@@ -276,8 +289,8 @@ static double bound_SH(instance *inst,
     for (int v : L) in_L[v] = true;
 
     // --- Compute internal SH weights (Policy 2: MIW-based) on G[L] ---
-    // MIW[v][h] = max edge weight from v to any vertex of color h in G[L], for h > color(v)
-    // Then internal(v) = sum over h >= color(v) of MIW[v][h]
+    // MIW[v][h] = max edge weight from v to any vertex of color h in G[L], for h < color(v)
+    // Then internal(v) = sum over h < color(v) of MIW[v][h]
 
     // Allocate MIW only for vertices in L (use full-size arrays keyed by vertex id)
     // MIW[v][h] for v in L, h in [0, num_colors_L)
@@ -295,23 +308,23 @@ static double bound_SH(instance *inst,
             int e = inst->G->adj_edge_idx[v][k];
             double w_e = inst->G->edge_weights[e];
 
-            if (h_v < h_u)
+            if (h_v > h_u)
             {
                 if (w_e > MIW[v][h_u]) MIW[v][h_u] = w_e;
             }
-            else if (h_v > h_u)
+            else if (h_v < h_u)
             {
                 // This edge is attributed to u, not v — handled when iterating over u
             }
         }
     }
 
-    // sigma(v) = gamma(v) + sum_{h >= color(v)} MIW[v][h]
+    // sigma(v) = gamma(v) + sum_{h < color(v)} MIW[v][h]
     vector<double> sigma(n, 0.0);
     for (int v : L)
     {
         double internal_v = 0.0;
-        for (int h = color_L[v]; h < num_colors_L; h++)
+        for (int h = 0; h < color_L[v]; h++)
             internal_v += MIW[v][h];
         sigma[v] = gamma[v] + internal_v;
     }
