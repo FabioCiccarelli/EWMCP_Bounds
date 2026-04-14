@@ -49,8 +49,8 @@ int main(int argc, char** argv)
 
 	if (argc < 2)
 	{
-		cout << "Usage: ./EWMCP_BOUNDS <instance_path> --bound <SH|SS|SSpooled|HFB|CG|F1|F11> [options]" << endl;
-		cout << "       ./EWMCP_BOUNDS <instance_path> --bound <SH|SS|HFB> --test-branching --incumbent <value> [options]" << endl;
+		cout << "Usage: ./bin/EWMCP_BOUNDS <instance_path> --bound <SH|SS|SSpooled|HFB|CG|F1|F11> [options]" << endl;
+		cout << "       ./bin/EWMCP_BOUNDS <instance_path> --bound <SH|SS|HFB> --test-branching --incumbent <value> [options]" << endl;
 		cout << "Use --help for more information." << endl;
 		exit(1);
 	}
@@ -62,7 +62,7 @@ int main(int argc, char** argv)
 		cout << "----------------------------------------------\n";
 		cout << "             PROGRAM USAGE                    \n";
 		cout << "----------------------------------------------\n";
-		cout << "./EWMCP_BOUNDS <instance_path> [options]\n\n";
+		cout << "./bin/EWMCP_BOUNDS <instance_path> [options]\n\n";
 		cout << "The weights file is derived automatically as <instance_path>.weights\n\n";
 		cout << "Options:\n";
 		cout << "  --bound <SH|SS|SSpooled|HFB|CG|F1|F11>  Bounding approach (required)\n";
@@ -72,7 +72,6 @@ int main(int argc, char** argv)
 		cout << "  --sorting-strategy <natural|size|weight>\n";
 		cout << "                                   Stable set sorting strategy for SH bound (default: natural)\n";
 		cout << "  --sorting-sense <1|-1>           Sorting direction: 1=ascending, -1=descending (default: 1)\n";
-		cout << "  --disable-valid-ineq             Disable valid inequalities (4)+(5) in F11 formulation (uses F1 label)\n";
 		cout << "  --test-branching                 Run single-branch B&B simulation (SH, SS, HFB only)\n";
 		cout << "  --incumbent <double>             Incumbent value for pruning (required with --test-branching)\n";
 		cout << "----------------------------------------------\n";
@@ -113,10 +112,6 @@ int main(int argc, char** argv)
 		{
 			inst.PARAM_SORTING_SENSE = atoi(argv[++i]);
 		}
-		else if (arg == "--disable-valid-ineq")
-		{
-			inst.PARAM_DISABLE_VALID_INEQ = true;
-		}
 		else if (arg == "--test-branching")
 		{
 			test_branching = true;
@@ -143,13 +138,6 @@ int main(int argc, char** argv)
 	{
 		cout << "ERROR: --bound must be SH, SS, SSpooled, HFB, CG, F1, or F11." << endl;
 		exit(2);
-	}
-
-	// F1 is syntactic sugar: run F11 solver with valid inequalities disabled
-	if (inst.PARAM_APPROACH == "F1")
-	{
-		inst.PARAM_APPROACH = "F11";
-		inst.PARAM_DISABLE_VALID_INEQ = true;
 	}
 
 	if (test_branching)
@@ -253,7 +241,7 @@ int main(int argc, char** argv)
 		return 0;
 	}
 
-	if(inst.PARAM_APPROACH == "SH" || inst.PARAM_APPROACH == "SS" || inst.PARAM_APPROACH == "SSpooled" || inst.PARAM_APPROACH == "HFB" || inst.PARAM_APPROACH == "CG" || inst.PARAM_APPROACH == "F11")	{
+	if(inst.PARAM_APPROACH == "SH" || inst.PARAM_APPROACH == "SS" || inst.PARAM_APPROACH == "SSpooled" || inst.PARAM_APPROACH == "HFB" || inst.PARAM_APPROACH == "CG" || inst.PARAM_APPROACH == "F11" || inst.PARAM_APPROACH == "F1")	{
 
 		// SSpooled handles coloring internally (dsatur + 5 random colorings)
 		if(inst.PARAM_APPROACH != "SSpooled")
@@ -363,10 +351,10 @@ int main(int argc, char** argv)
 
 			cout << "CG Bound time: " << inst.CGBound_Time << endl;
 		}
-		else if(inst.PARAM_APPROACH == "F11")
+		else if(inst.PARAM_APPROACH == "F11" || inst.PARAM_APPROACH == "F1")
 		{
 			cout << "\n************************************\n";
-			if(!inst.PARAM_DISABLE_VALID_INEQ) 
+			if(inst.PARAM_APPROACH == "F11") 
 			{
 			cout << "F11 BOUND\n";
 			}
@@ -381,7 +369,7 @@ int main(int argc, char** argv)
 			time_end=clock();
 			inst.F11Bound_Time=(double)(time_end-time_start)/(double)CLOCKS_PER_SEC;
 
-			if(!inst.PARAM_DISABLE_VALID_INEQ) 
+			if(inst.PARAM_APPROACH == "F11") 
 			{
 			cout << "F11 Bound time: " << inst.F11Bound_Time << endl;
 			}
@@ -409,8 +397,6 @@ int main(int argc, char** argv)
 	//          nnodes | nedges | num_colors | bound_value | bound_value_2 | status | time
 
 	string approach_label = inst.PARAM_APPROACH;
-	if (inst.PARAM_APPROACH == "F11" && inst.PARAM_DISABLE_VALID_INEQ)
-		approach_label = "F1";
 
 	string sorting_strategy_out = (inst.PARAM_APPROACH == "SH") ? inst.PARAM_SORTING_STRATEGY : "none";
 	string sorting_sense_out = (inst.PARAM_APPROACH == "SH" && inst.PARAM_SORTING_STRATEGY != "natural")
@@ -464,7 +450,7 @@ int main(int argc, char** argv)
 		<< inst.CGBound_Time << "\t"
 		<< "\n";
 	}
-	else if(inst.PARAM_APPROACH == "F11") 
+	else if(inst.PARAM_APPROACH == "F11" || inst.PARAM_APPROACH == "F1") 
 	{
 		info_SUMMARY
 		<< inst.F11Bound << "\t"

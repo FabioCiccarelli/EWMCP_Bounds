@@ -38,25 +38,24 @@ The weights file is always derived automatically as `<instance_path>.weights`.
 | `--time-limit` | Time limit in seconds | positive number | `3600` |
 | `--sorting-strategy` | Stable-set ordering for `SH` | `natural`, `size`, `weight` | `natural` |
 | `--sorting-sense` | Ordering direction for `SH` | `1`, `-1` | `1` |
-| `--disable-valid-ineq` | Drop valid inequalities in `F11` | flag | off |
 | `--test-branching` | Enable single-branch branching study | flag | off |
 | `--incumbent` | Incumbent value used for pruning in branching mode | positive real | required with `--test-branching` |
 
 ## Supported Bounds
 
-- `SS`: San Segundo et al. LP bound.
-- `SSpooled`: San Segundo bound with a pooled family of independent sets obtained from one DSATUR coloring plus five random colorings.
-- `SH`: Shimizu et al. bound.
-- `HFB`: Hosseinian et al. bound.
+- `SS`: San Segundo et al. LP bound ([San Segundo et al.](https://doi.org/10.1016/j.ejor.2019.03.047)).
+- `SSpooled`: San Segundo bound with a pooled family of independent sets obtained from one DSATUR coloring plus five random colorings ([San Segundo et al.](https://doi.org/10.1016/j.ejor.2019.03.047)).
+- `SH`: Shimizu et al. bound ([Shimizu et al.](https://doi.org/10.1016/j.disopt.2020.100583)).
+- `HFB`: Hosseinian et al. bound ([Hosseinian et al.](https://doi.org/10.1287/ijoc.2019.0898)).
 - `CG`: column-generation LP bound with independent-set separation.
-- `F11`: compact LP formulation with valid inequalities.
-- `F1`: shorthand for `F11 --disable-valid-ineq`.
+- `F11`: compact LP formulation with valid inequalities ([see Gouveia and Martins](https://doi.org/10.1007/s13675-014-0028-1)).
+- `F1`: compact LP formulation without valid inequalities ([see Gouveia and Martins](https://doi.org/10.1007/s13675-014-0028-1)).
 
 Notes:
 
 - `SSpooled` handles its own set construction internally; `--coloring` and `--seed` do not change its behavior.
 - `--sorting-strategy` and `--sorting-sense` are only meaningful for `SH`.
-- In output files, `F1` is reported explicitly as `F1` even though the solver path is implemented through `F11` with valid inequalities disabled.
+- `F1` and `F11` are exposed as distinct CLI choices and are reported as such in the output files.
 
 ## Input Format
 
@@ -93,7 +92,7 @@ wm
 # Column-generation bound
 ./bin/EWMCP_BOUNDS path/to/instance.clq --bound CG --coloring dsatur --time-limit 3600
 
-# F11 without valid inequalities, reported as F1
+# F1 bound
 ./bin/EWMCP_BOUNDS path/to/instance.clq --bound F1 --coloring dsatur --time-limit 3600
 
 # Single-branch branching study

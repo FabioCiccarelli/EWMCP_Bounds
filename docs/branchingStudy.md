@@ -22,7 +22,7 @@ Relevant options:
 | `--sorting-strategy <natural\|size\|weight>` | Stable-set ordering for `SH` | `natural` |
 | `--sorting-sense <1\|-1>` | Ordering direction for `SH` | `1` |
 
-For the general CLI and build instructions, see [code_usage.md](code_usage.md).
+For the general CLI and build instructions, see [codeUsage.md](codeUsage.md).
 
 ## Simulation Logic
 

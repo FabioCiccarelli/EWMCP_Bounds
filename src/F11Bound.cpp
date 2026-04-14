@@ -10,7 +10,11 @@
 void F11Bound_Solve(instance *inst)
 /***************************************************************************/
 {
+	const bool use_valid_ineq = (inst->PARAM_APPROACH == "F11");
+	const char *bound_label = use_valid_ineq ? "F11" : "F1";
+
  try {
+
 	int n = inst->G->nnodes;
 	int m = inst->G->nedges;
 	int k = inst->num_colors;   // upper bound on clique number
@@ -72,7 +76,7 @@ void F11Bound_Solve(instance *inst)
 		}
 	}
 
-	if (!inst->PARAM_DISABLE_VALID_INEQ)
+	if (use_valid_ineq)
 	{
 		// (4) sum_{j in delta(i)} y_ij <= (k-1) * x_i   for all i in V
 		// For each vertex i, iterate over its incident edges
@@ -125,10 +129,7 @@ void F11Bound_Solve(instance *inst)
 	auto status = cplex.getStatus();
 	if (status != IloAlgorithm::Optimal && status != IloAlgorithm::Feasible)
 	{
-		if (!inst->PARAM_DISABLE_VALID_INEQ) 
-        { cout << "F11 Status: " << status << endl;}
-        else
-        { cout << "F1 Status: " << status << endl;}
+		cout << bound_label << " Status: " << status << endl;
 		time_limit_hit = true;
 	}
 
@@ -139,10 +140,7 @@ void F11Bound_Solve(instance *inst)
 		// integer optima (e.g. sum_weights/2 for F1); floor would silently lose 1.
 		// round() is a valid upper bound whenever edge weights are integers.
 		inst->F11Bound = round(raw);
-        if (!inst->PARAM_DISABLE_VALID_INEQ) 
-        { cout << "F11 Bound value: " << inst->F11Bound << endl;}
-        else
-        { cout << "F1 Bound value: " << inst->F11Bound << endl;}
+		cout << bound_label << " Bound value: " << inst->F11Bound << endl;
 
 	} catch (...) {
 		inst->F11Bound = -1.0;
@@ -155,12 +153,7 @@ void F11Bound_Solve(instance *inst)
 	env.end();
 
  } catch (IloException &e) {
-    if(!inst->PARAM_DISABLE_VALID_INEQ) 
-    { cerr << "CPLEX Exception in F11Bound_Solve: " << e.getMessage() << endl;}
-    else
-    {
-	cerr << "CPLEX Exception in F1Bound_Solve: " << e.getMessage() << endl;
-    }
+	cerr << "CPLEX Exception in " << bound_label << "Bound_Solve: " << e.getMessage() << endl;
 	inst->F11Bound = -1.0;
 	inst->F11Bound_TimeLimitHit = true;
  }

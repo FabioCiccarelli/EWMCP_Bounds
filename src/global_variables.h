@@ -45,7 +45,6 @@ typedef struct
 	double PARAM_TIME_LIMIT;
 	string PARAM_SORTING_STRATEGY = "natural";  // "natural", "size", or "weight"
 	int PARAM_SORTING_SENSE = 1;                // +1 = ascending, -1 = descending
-	bool PARAM_DISABLE_VALID_INEQ = false;      // if true, F11 drops constraints (4)+(5) → F1
 	///////////////////////////////////////////////////////////////////////////////
 
 
