@@ -128,7 +128,7 @@ The secondary field depends on the bound:
 - `CG`: number of generated columns.
 - `F11` and `F1`: `none`.
 
-The status field is `Optimal` for `SH` and `HFB`, CPLEX-derived for `SS` and `SSpooled`, and either `Optimal` or `TimeLimit` for `CG`, `F11` and `F1`.
+The status field is `Optimal` for `SH` and `HFB`, CPLEX-derived for `SS` and `SSpooled`, and either `Optimal` or `TimeLimit` for `CG`, `F1` and `F11`.
 
 ## Branching Output Files
 
