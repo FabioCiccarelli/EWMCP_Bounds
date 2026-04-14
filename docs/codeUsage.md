@@ -139,9 +139,9 @@ In branching-study mode, the program writes to a bound-specific file in the curr
 - `branching_results_SS.txt`
 - `branching_results_HFB.txt`
 
-See [branching_study.md](branching_study.md) for the exact format and interpretation.
+See [branchingStudy.md](branchingStudy.md) for the exact format and interpretation.
 
 ## References
 
 - [../README.md](../README.md)
-- [branching_study.md](branching_study.md)
+- [branchingStudy.md](branchingStudy.md)
