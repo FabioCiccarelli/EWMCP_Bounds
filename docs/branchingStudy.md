@@ -16,11 +16,11 @@ Relevant options:
 
 | Parameter | Meaning | Default |
 | --- | --- | --- |
-| `--coloring <dsatur|random>` | Coloring method used on the current candidate subgraph | `dsatur` |
+| `--coloring <dsatur\|random>` | Coloring method used on the current candidate subgraph | `dsatur` |
 | `--seed <int>` | Seed for vertex selection and, if applicable, random coloring | `-1` |
 | `--time-limit <seconds>` | LP time limit used by `SS` | `3600` |
-| `--sorting-strategy <natural|size|weight>` | Stable-set ordering for `SH` | `natural` |
-| `--sorting-sense <1|-1>` | Ordering direction for `SH` | `1` |
+| `--sorting-strategy <natural\|size\|weight>` | Stable-set ordering for `SH` | `natural` |
+| `--sorting-sense <1\|-1>` | Ordering direction for `SH` | `1` |
 
 For the general CLI and build instructions, see [code_usage.md](code_usage.md).
 
@@ -72,14 +72,7 @@ where:
 - `L_size` is the current candidate-set size.
 - `bound` is the raw total bound at that depth.
 - `best_bound` is the minimum total bound observed up to that depth.
-- `trivial` is the total trivial upper bound recorded for comparison.
-
-## Interpretation Notes
-
-- Smaller pruning depth usually indicates a stronger bound on that branch.
-- `best_bound` is the quantity used for pruning, not the raw `bound` alone.
-- The raw total bound can increase from one depth to the next because the subgraph is recolored from scratch at each step.
-- This non-monotonicity is expected; the monotone quantity is `best_bound`.
+- `trivial` is the total trivial upper bound (sum of the weights of the edges in L) recorded for comparison.
 
 ## Implementation Pointers
 
