@@ -17,12 +17,11 @@
 This repository contains a C++17 implementation of upper bounds for the Edge-Weighted Maximum Clique Problem (EWMCP):
 
 - `SS` - San Segundo et al. bound ([San Segundo et al.](https://doi.org/10.1016/j.ejor.2019.03.047))
-- `SSpooled` - San Segundo bound with pooled independent sets from DSATUR + 5 random colorings ([San Segundo et al.](https://doi.org/10.1016/j.ejor.2019.03.047))
+- `SSpooled` - San Segundo bound with pooled independent sets from DSATUR + 5 random colorings
 - `SH` - Shimizu et al. bound ([Shimizu et al.](https://doi.org/10.1016/j.disopt.2020.100583))
 - `HFB` - Hosseinian et al. bound ([Hosseinian et al.](https://doi.org/10.1287/ijoc.2019.0898))
 - `CG` - column-generation bound with independent-set separation
-- `F11` - compact LP formulation with valid inequalities ([see Gouveia and Martins](https://doi.org/10.1007/s13675-014-0028-1))
-- `F1` - compact LP formulation without valid inequalities ([see Gouveia and Martins](https://doi.org/10.1007/s13675-014-0028-1))
+- `F1` and `F11` - linear relaxations of compact LP formulations for the EWMCP ([see Gouveia and Martins](https://doi.org/10.1007/s13675-014-0028-1))
 
 The code is associated with the paper "Strength of the Upper Bounds for the Edge-Weighted Maximum Clique Problem" by F. Ciccarelli, V. Dose, F. Furini and M. Monaci.
 
@@ -61,8 +60,8 @@ More details:
 
 - [src/](src/) - core implementation of the bounds, coloring, graph handling and CLI
 - [docs/](docs/) - user-facing documentation
-- [data/instances/](data/instances/) - benchmark archives, including [data/instances/DIMACS.zip](data/instances/DIMACS.zip) and [data/instances/RANDOM.zip](data/instances/RANDOM.zip)
-- [data/results/](data/results/) - curated Excel workbooks with instance-wise computational results
+- [data/instances/](data/instances/) - benchmark archives, including [DIMACS](data/instances/DIMACS.zip) and [RANDOM](data/instances/RANDOM.zip) instances
+- [data/results/](data/results/) - Excel workbooks with instance-wise computational results
 - [Makefile](Makefile) - build entry point
 - [license.md](license.md) - academic license terms
 
@@ -72,16 +71,16 @@ The public result summaries currently stored in [data/results/](data/results/) a
 
 | File | Description |
 | --- | --- |
-| [data/results/boundComparisonDIMACS.xlsx](data/results/boundComparisonDIMACS.xlsx) | Instance-wise comparison of `SS`, `SH` and `HFB` on DIMACS, with DSATUR and five random colorings. |
-| [data/results/boundComparisonRANDOM.xlsx](data/results/boundComparisonRANDOM.xlsx) | Instance-wise comparison of `SS`, `SH` and `HFB` on RANDOM instances, with DSATUR and five random colorings. |
-| [data/results/LP-basedBounds.xlsx](data/results/LP-basedBounds.xlsx) | LP-oriented comparison of `SS`, `SSpooled`, `CG`, `F11` and `F1` on DIMACS instances with known optimum. |
+| [data/results/boundComparisonDIMACS.xlsx](data/results/boundComparisonDIMACS.xlsx) | Instance-wise comparison of `SS`, `SH` and `HFB` on DIMACS, with Dsatur and five random colorings. |
+| [data/results/boundComparisonRANDOM.xlsx](data/results/boundComparisonRANDOM.xlsx) | Instance-wise comparison of `SS`, `SH` and `HFB` on RANDOM instances, with Dsatur and five random colorings. |
+| [data/results/LP-basedBounds.xlsx](data/results/LP-basedBounds.xlsx) | Comparison of LP-based upper bounds (`SS`, `SSpooled`, `CG`, `F1` and `F11`) on DIMACS instances with known optimum. |
 | [data/results/sortingStudyUB2.xlsx](data/results/sortingStudyUB2.xlsx) | Sorting-strategy study for the Shimizu bound, with per-instance DIMACS results. |
 | [data/results/branchingSimulation.xlsx](data/results/branchingSimulation.xlsx) | Single-branch B&B simulation study for `SH`, `SS` and `HFB`, including summary and per-seed sheets. |
-| [data/results/EWMCPalgoComparison.xlsx](data/results/EWMCPalgoComparison.xlsx) | Comparison of exact EWMCP algorithms on DIMACS instances. |
+| [data/results/EWMCPalgoComparison.xlsx](data/results/EWMCPalgoComparison.xlsx) | Comparison of state-of-the-art exact EWMCP algorithms on DIMACS instances. |
 
 ## Acknowledgments
 
-This repository includes a DSATUR implementation adapted from Brian Crites' [graph-coloring](https://github.com/brrcrites/graph-coloring) codebase.
+This repository includes a DSatur implementation adapted from Brian Crites' [graph-coloring](https://github.com/brrcrites/graph-coloring) codebase.
 
 ## License And Citation
 
