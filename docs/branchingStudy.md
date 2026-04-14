@@ -74,6 +74,12 @@ where:
 - `best_bound` is the minimum total bound observed up to that depth.
 - `trivial` is the total trivial upper bound (sum of the weights of the edges in L) recorded for comparison.
 
+## Strength-Ratio Plots
+
+The directory [../data/results/strengthRatioTrajectories/](../data/results/strengthRatioTrajectories/) contains one PDF file for each DIMACS instance included in the branching study. Each plot reports the trajectory of the strength ratio of `SH`, `SS` and `HFB` along the branching process, so that the relative strength of the three bounds can be inspected instance by instance across depth.
+
+The file names match the instance names, for example `brock200_1.pdf`, `C125.9.pdf` and `san1000.pdf`.
+
 ## Implementation Pointers
 
 - [../src/BranchingTest.cpp](../src/BranchingTest.cpp)

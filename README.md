@@ -78,6 +78,8 @@ The public result summaries currently stored in [data/results/](data/results/) a
 | [data/results/branchingSimulation.xlsx](data/results/branchingSimulation.xlsx) | Single-branch B&B simulation study for `SH`, `SS` and `HFB`, including summary and per-seed sheets. |
 | [data/results/EWMCPalgoComparison.xlsx](data/results/EWMCPalgoComparison.xlsx) | Comparison of state-of-the-art exact EWMCP algorithms on DIMACS instances. |
 
+In addition to the Excel workbooks, [data/results/strengthRatioTrajectories/](data/results/strengthRatioTrajectories/) contains one PDF plot for each DIMACS instance considered in the branching study, showing the depth-wise strength-ratio trajectories of `SH`, `SS` and `HFB`.
+
 ## Acknowledgments
 
 This repository includes a DSatur implementation adapted from Brian Crites' [graph-coloring](https://github.com/brrcrites/graph-coloring) codebase.
