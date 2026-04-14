@@ -11,8 +11,3 @@ data/DIMACS/
 data/RANDOM/
 results.txt
 
-
-#temporary 
-partialSol.md
-
-shimizu_bound_fix_prompt.txt
